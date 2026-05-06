@@ -65,7 +65,7 @@ export function Hero() {
 
       <div className="dot-grid absolute inset-0 opacity-70" aria-hidden />
 
-      <div className="relative z-10 mx-auto grid max-w-[1200px] items-center gap-12 px-4 py-16 lg:grid-cols-[1fr_minmax(0,420px)] lg:gap-8 lg:py-24">
+      <div className="z-10 grid max-w-[1200px] items-center gap-12 px-4 py-16 ">
         <motion.div
           variants={staggerContainer}
           initial="hidden"
@@ -122,22 +122,6 @@ export function Hero() {
             Trusted by campuses & founders · Messaging · Skill-first matching
           </motion.p>
         </motion.div>
-
-        {/* Floating preview cards */}
-        <div className="relative mx-auto hidden h-[480px] w-full max-w-md lg:block" aria-hidden>
-          <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-white via-[#eef2ff]/80 to-white p-px shadow-[0_24px_80px_-12px_rgba(79,70,229,0.22)] ring-1 ring-black/[0.04]">
-            <div className="flex h-full flex-col rounded-[calc(2rem-1px)] bg-gradient-to-b from-white/95 to-[#f8fafc]/95 px-6 py-7 backdrop-blur-md">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-[#4338CA]">Live pulse</p>
-            </div>
-          </div>
-          {!reduceMotion && (
-            <motion.div
-              className="absolute -right-6 -top-4 h-24 w-24 rounded-full bg-[#4F46E5]/25 blur-2xl"
-              animate={{ scale: [1, 1.15, 1], opacity: [0.35, 0.6, 0.35] }}
-              transition={{ duration: 5, repeat: Infinity }}
-            />
-          )}
-        </div>
       </div>
     </section>
   )
