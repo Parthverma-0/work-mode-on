@@ -94,7 +94,7 @@ export function Hero() {
             <span className="block text-[2.65rem] leading-[1.05] sm:text-6xl lg:text-[3.85rem]">
               Your first real entry into the
             </span>
-            <span className="mt-2 block bg-gradient-to-r from-[#0f172a] via-[#4F46E5] to-[#6366f1] bg-clip-text text-[2.65rem] leading-[1.05] text-transparent sm:text-6xl lg:text-[3.85rem]">
+            <span className="mt-2 block  bg-indigo-600 bg-clip-text text-[2.65rem] leading-[1.05] text-transparent sm:text-6xl lg:text-[3.85rem]">
               business world.
             </span>
           </motion.h1>
@@ -136,13 +136,6 @@ export function Hero() {
               </Link>
             </motion.div>
           </motion.div>
-
-          <motion.p
-            variants={fadeUp}
-            className="mt-10 text-xs font-medium uppercase tracking-wider text-[#94a3b8]"
-          >
-            Trusted by campuses & founders · Messaging · Skill-first matching
-          </motion.p>
         </motion.div>
       </div>
     </section>
