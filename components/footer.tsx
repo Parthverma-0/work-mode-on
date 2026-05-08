@@ -1,13 +1,23 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { Zap, ArrowRight } from 'lucide-react'
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
+import { Poppins } from "next/font/google";
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
 
 export function FinalCTA() {
   return (
     <section className="dot-grid relative w-full overflow-hidden bg-background py-24">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#eef2ff]/40 via-transparent to-transparent" aria-hidden />
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#eef2ff]/40 via-transparent to-transparent"
+        aria-hidden
+      />
       <div className="relative z-[1] mx-auto max-w-4xl px-6 text-center sm:px-8">
         <motion.h2
           className="mb-6 text-4xl font-semibold tracking-tight text-black md:text-5xl"
@@ -46,28 +56,28 @@ export function FinalCTA() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
 
 export function Footer() {
   const footerLinks = [
     {
-      title: 'Product',
-      links: ['Features', 'Pricing', 'Security', 'Roadmap'],
+      title: "Product",
+      links: ["Features", "Pricing", "Security", "Roadmap"],
     },
     {
-      title: 'Company',
-      links: ['About', 'Blog', 'Careers', 'Press'],
+      title: "Company",
+      links: ["About", "Blog", "Careers", "Press"],
     },
     {
-      title: 'Resources',
-      links: ['Documentation', 'Community', 'Support', 'Contact'],
+      title: "Resources",
+      links: ["Documentation", "Community", "Support", "Contact"],
     },
     {
-      title: 'Legal',
-      links: ['Privacy', 'Terms', 'Cookies', 'Compliance'],
+      title: "Legal",
+      links: ["Privacy", "Terms", "Cookies", "Compliance"],
     },
-  ]
+  ];
 
   return (
     <footer className="relative w-full overflow-hidden bg-gradient-to-b from-[#050505] to-black py-16 text-white">
@@ -87,13 +97,16 @@ export function Footer() {
             viewport={{ once: true }}
             transition={{ duration: 0.45 }}
           >
-            <Link href="/" className="mb-4 flex items-center gap-2 outline-offset-4">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#6366f1] to-[#4F46E5] shadow-lg shadow-[#4F46E5]/35">
-                <Zap className="h-5 w-5 text-white" aria-hidden />
+            <Link href="/" className="mb-4 flex items-center outline-offset-4">
+              <span
+                className={`${poppins.className} text-sm font-semibold tracking-tight text-white`}
+              >
+                work mode on
               </span>
-              <span className="text-sm font-semibold tracking-tight">Work Mode On</span>
             </Link>
-            <p className="text-sm leading-relaxed text-white/50">Smart job matching for the next generation.</p>
+            <p className="text-sm leading-relaxed text-white/50">
+              Smart job matching for the next generation.
+            </p>
           </motion.div>
 
           {footerLinks.map((section, idx) => (
@@ -104,7 +117,9 @@ export function Footer() {
               viewport={{ once: true }}
               transition={{ duration: 0.45, delay: idx * 0.05 }}
             >
-              <h4 className="mb-4 text-sm font-semibold text-white">{section.title}</h4>
+              <h4 className="mb-4 text-sm font-semibold text-white">
+                {section.title}
+              </h4>
               <ul className="space-y-2">
                 {section.links.map((link) => (
                   <li key={link}>
@@ -122,9 +137,11 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col items-center justify-center gap-4 border-t border-white/10 pt-8 md:flex-row">
-          <p className="text-sm text-white/45">© {new Date().getFullYear()} Work Mode On. All rights reserved.</p>
+          <p className="text-sm text-white/45">
+            © {new Date().getFullYear()} work mode on. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>
-  )
+  );
 }

@@ -98,16 +98,6 @@ export function Hero() {
               business world.
             </span>
           </motion.h1>
-
-          <motion.p
-            variants={fadeUp}
-            className="mx-auto mt-7 max-w-xl text-[17px] leading-relaxed text-[#475569]"
-          >
-            Internships, freelance, and graduate roles — matched for skills,
-            pace, and fit. Built for students, fresh grads, and teams that hire
-            with intention.
-          </motion.p>
-
           <motion.div
             variants={fadeUp}
             className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row"
