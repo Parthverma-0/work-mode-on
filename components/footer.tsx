@@ -16,18 +16,8 @@ export function FinalCTA() {
           transition={{ duration: 0.55, ease: [0.25, 0.1, 0.25, 1] }}
           viewport={{ once: true }}
         >
-          Ready to switch on your career?
+          Ready to turn your work mode on!
         </motion.h2>
-
-        <motion.p
-          className="mb-10 text-lg leading-relaxed text-[#475569]"
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.06 }}
-          viewport={{ once: true }}
-        >
-          Join students and teams matching on skills, not noise.
-        </motion.p>
 
         <motion.div
           className="flex flex-col justify-center gap-3 sm:flex-row sm:gap-4"
@@ -41,7 +31,7 @@ export function FinalCTA() {
               href="/auth/signup"
               className="inline-flex h-12 min-h-[44px] items-center justify-center gap-2 rounded-full bg-[#0f172a] px-8 text-sm font-semibold text-white shadow-xl shadow-black/15 transition-colors hover:bg-black"
             >
-              Get started free
+              Get started
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
           </motion.div>
@@ -131,9 +121,8 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 md:flex-row">
+        <div className="flex flex-col items-center justify-center gap-4 border-t border-white/10 pt-8 md:flex-row">
           <p className="text-sm text-white/45">© {new Date().getFullYear()} Work Mode On. All rights reserved.</p>
-          <p className="text-sm text-white/45">Built for job seekers and hiring teams.</p>
         </div>
       </div>
     </footer>

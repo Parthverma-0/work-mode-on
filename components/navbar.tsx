@@ -62,7 +62,7 @@ export function Navbar() {
           >
             <Zap className="relative z-[1] h-[18px] w-[18px] text-white" aria-hidden />
           </motion.span>
-          <span className="hidden text-sm font-semibold tracking-tight text-[#0f172a] sm:inline">
+          <span className="hidden text-sm font-semibold tracking-tight text-black sm:inline">
             Work Mode On
           </span>
         </Link>
@@ -77,7 +77,7 @@ export function Navbar() {
                 aria-expanded={active}
                 onClick={() => setExpanded(active ? null : item.id)}
                 className={`flex min-h-[44px] shrink-0 cursor-pointer items-center gap-1 rounded-lg px-2 text-sm font-medium outline-offset-2 transition-colors ${
-                  active ? 'text-[#4338CA]' : 'text-[#475569] hover:text-[#0f172a]'
+                  active ? 'text-[#4338CA]' : 'text-black hover:text-[#0f172a]'
                 }`}
                 whileTap={reduceMotion ? undefined : { scale: 0.97 }}
               >
@@ -90,7 +90,7 @@ export function Navbar() {
           })}
           <button
             type="button"
-            className="hidden min-h-[44px] shrink-0 rounded-lg px-2 text-sm font-medium text-[#64748b] transition-colors hover:text-[#0f172a] md:inline"
+            className="hidden min-h-[44px] shrink-0 rounded-lg px-2 text-sm font-medium text-black transition-colors hover:text-[#0f172a] md:inline"
           >
             Pricing
           </button>
@@ -99,7 +99,7 @@ export function Navbar() {
         <div className="relative z-20 flex shrink-0 items-center gap-2 sm:gap-4">
           <Link
             href="/auth/login"
-            className="min-h-[44px] px-3 text-sm font-medium text-[#475569] outline-offset-4 transition-colors hover:text-[#0f172a] sm:inline-flex sm:items-center"
+            className="min-h-[44px] px-3 text-sm font-medium text-black outline-offset-4 transition-colors hover:text-[#0f172a] sm:inline-flex sm:items-center"
           >
             Sign in
           </Link>

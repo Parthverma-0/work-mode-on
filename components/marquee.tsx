@@ -6,18 +6,18 @@ export function MarqueeSection() {
   const [isPaused, setIsPaused] = useState(false)
 
   const companies = [
-    'Google',
-    'Meta',
-    'Amazon',
-    'Microsoft',
-    'Apple',
-    'Flipkart',
-    'Infosys',
-    'Stanford',
-    'Harvard',
-    'MIT',
-    'IIT Bombay',
-    'IIT Delhi'
+    'Founders',
+    'Students',
+    'Employees',
+    'TPOs',
+    'Recruiters',
+    'Colleges',
+    'Founders',
+    'Students',
+    'Employees',
+    'TPOs',
+    'Recruiters',
+    'Colleges'
   ]
 
   // Duplicate for seamless loop
@@ -28,7 +28,7 @@ export function MarqueeSection() {
       <div className="max-w-7xl mx-auto px-8">
         <div className="flex items-center gap-8">
           <span className="text-xs text-gray-500 whitespace-nowrap flex-shrink-0">
-            Trusted by students and companies at
+            Trusted by
           </span>
           <div
             className="overflow-hidden flex-1"
