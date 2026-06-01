@@ -20,7 +20,15 @@ export function FinalCTA() {
       />
       <div className="relative z-[1] mx-auto max-w-4xl px-6 text-center sm:px-8">
         <motion.h2
-          className="mb-6 text-4xl font-semibold tracking-tight text-black md:text-5xl"
+          // FIX 1: fluid font size so it never overflows on narrow screens.
+          // clamp(1.75rem, 6vw, 3rem) → ~28px on 320px, ~30px on 390px, 48px on 800px+
+          // word-break added as a safety net for very long words.
+          className="mb-6 font-semibold tracking-tight text-black"
+          style={{
+            fontSize: "clamp(1.75rem, 6vw, 3rem)",
+            lineHeight: 1.2,
+            wordBreak: "break-word",
+          }}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55, ease: [0.25, 0.1, 0.25, 1] }}
@@ -30,25 +38,28 @@ export function FinalCTA() {
         </motion.h2>
 
         <motion.div
-          className="flex flex-col justify-center gap-3 sm:flex-row sm:gap-4"
+          // FIX 2: buttons go full-width on mobile, side-by-side from sm up.
+          // w-full on the wrapper + the Link enforces it below sm.
+          className="flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:gap-4"
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.12 }}
           viewport={{ once: true }}
         >
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">
             <Link
               href="/auth/signup"
-              className="inline-flex h-12 min-h-[44px] items-center justify-center gap-2 rounded-full bg-[#0f172a] px-8 text-sm font-semibold text-white shadow-xl shadow-black/15 transition-colors hover:bg-black"
+              // FIX 3: w-full on mobile so button spans the container width
+              className="inline-flex h-12 min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-[#0f172a] px-8 text-sm font-semibold text-white shadow-xl shadow-black/15 transition-colors hover:bg-black sm:w-auto"
             >
               Get started
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">
             <Link
               href="/auth/login"
-              className="inline-flex h-12 min-h-[44px] items-center justify-center rounded-full border border-black/[0.08] bg-white px-8 text-sm font-semibold text-[#0f172a] shadow-sm transition-colors hover:bg-[#fafafa]"
+              className="inline-flex h-12 min-h-[44px] w-full items-center justify-center rounded-full border border-black/[0.08] bg-white px-8 text-sm font-semibold text-[#0f172a] shadow-sm transition-colors hover:bg-[#fafafa] sm:w-auto"
             >
               Sign in
             </Link>
@@ -90,17 +101,33 @@ export function Footer() {
         viewport={{ once: true }}
       />
       <div className="relative z-[1] mx-auto max-w-7xl px-6 sm:px-8">
-        <div className="mb-12 grid gap-12 md:grid-cols-5">
+        {/*
+          FIX 4: Responsive grid overhaul.
+
+          Original `md:grid-cols-5` jumped straight from 1 col (all stacked)
+          to 5 cols at 768px with nothing in between. On a 390px phone this
+          produced a single endless column — brand + 4 link sections all
+          stacked with no visual separation.
+
+          New layout:
+          - Mobile (<640px):  2-col grid for the 4 link sections, brand above full-width.
+          - sm (640px+):      still 2-col links, brand takes full row above.
+          - md (768px+):      original 5-col layout restored (brand + 4 sections side by side).
+
+          We split brand and links into separate elements so we can control
+          their grid placement independently.
+        */}
+        <div className="mb-12">
+          {/* Brand — full width on mobile, sits in its own row */}
           <motion.div
+            className="mb-10 md:hidden"
             initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.45 }}
           >
             <Link href="/" className="mb-4 flex items-center outline-offset-4">
-              <span
-                className={`${poppins.className} text-sm font-semibold tracking-tight text-white`}
-              >
+              <span className={`${poppins.className} text-sm font-semibold tracking-tight text-white`}>
                 work mode on
               </span>
             </Link>
@@ -109,31 +136,69 @@ export function Footer() {
             </p>
           </motion.div>
 
-          {footerLinks.map((section, idx) => (
+          {/* 5-col desktop grid (brand + 4 link cols) — original layout */}
+          <div className="hidden md:grid md:grid-cols-5 md:gap-12">
             <motion.div
-              key={section.title}
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.45, delay: idx * 0.05 }}
+              transition={{ duration: 0.45 }}
             >
-              <h4 className="mb-4 text-sm font-semibold text-white">
-                {section.title}
-              </h4>
-              <ul className="space-y-2">
-                {section.links.map((link) => (
-                  <li key={link}>
-                    <a
-                      href="#"
-                      className="text-sm text-white/50 transition-colors hover:text-white"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <Link href="/" className="mb-4 flex items-center outline-offset-4">
+                <span className={`${poppins.className} text-sm font-semibold tracking-tight text-white`}>
+                  work mode on
+                </span>
+              </Link>
+              <p className="text-sm leading-relaxed text-white/50">
+                Smart job matching for the next generation.
+              </p>
             </motion.div>
-          ))}
+
+            {footerLinks.map((section, idx) => (
+              <motion.div
+                key={section.title}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: idx * 0.05 }}
+              >
+                <h4 className="mb-4 text-sm font-semibold text-white">{section.title}</h4>
+                <ul className="space-y-2">
+                  {section.links.map((link) => (
+                    <li key={link}>
+                      <a href="#" className="text-sm text-white/50 transition-colors hover:text-white">
+                        {link}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* 2-col mobile/tablet grid for link sections */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:hidden">
+            {footerLinks.map((section, idx) => (
+              <motion.div
+                key={section.title}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: idx * 0.05 }}
+              >
+                <h4 className="mb-4 text-sm font-semibold text-white">{section.title}</h4>
+                <ul className="space-y-2.5">
+                  {section.links.map((link) => (
+                    <li key={link}>
+                      <a href="#" className="text-sm text-white/50 transition-colors hover:text-white">
+                        {link}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
         <div className="flex flex-col items-center justify-center gap-4 border-t border-white/10 pt-8 md:flex-row">

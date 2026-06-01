@@ -1,6 +1,6 @@
 "use client";
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef, useEffect, useState } from "react";
+import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import {
   Network,
   Smartphone,
@@ -63,15 +63,9 @@ const cards = [
   },
 ];
 
-function NetworkVisual({
-  accent,
-  accentLight,
-  accentMid,
-}: {
-  accent: string;
-  accentLight: string;
-  accentMid: string;
-}) {
+// ─── Visuals ────────────────────────────────────────────────────────────────
+
+function NetworkVisual({ accent, accentLight, accentMid }: { accent: string; accentLight: string; accentMid: string }) {
   const nodes = [
     { x: 50, y: 50, r: 20, label: "You", main: true },
     { x: 80, y: 20, r: 13, label: "Dev", main: false },
@@ -79,119 +73,35 @@ function NetworkVisual({
     { x: 20, y: 25, r: 11, label: "DS", main: false },
     { x: 18, y: 75, r: 11, label: "UX", main: false },
   ];
-  const lines = [
-    [0, 1],
-    [0, 2],
-    [0, 3],
-    [0, 4],
-    [1, 2],
-  ];
+  const lines = [[0, 1],[0, 2],[0, 3],[0, 4],[1, 2]];
   return (
-    <svg
-      viewBox="0 0 100 100"
-      className="w-full h-full"
-      style={{ overflow: "visible" }}
-    >
+    <svg viewBox="0 0 100 100" className="w-full h-full" style={{ overflow: "visible" }}>
       {lines.map(([a, b], i) => (
-        <line
-          key={i}
-          x1={`${nodes[a].x}%`}
-          y1={`${nodes[a].y}%`}
-          x2={`${nodes[b].x}%`}
-          y2={`${nodes[b].y}%`}
-          stroke={accentMid}
-          strokeWidth="0.7"
-          strokeDasharray="2.5 2"
-        />
+        <line key={i} x1={`${nodes[a].x}%`} y1={`${nodes[a].y}%`} x2={`${nodes[b].x}%`} y2={`${nodes[b].y}%`} stroke={accentMid} strokeWidth="0.7" strokeDasharray="2.5 2" />
       ))}
       {nodes.map((n, i) => (
         <g key={i}>
-          <circle
-            cx={`${n.x}%`}
-            cy={`${n.y}%`}
-            r={`${n.r * 0.85}%`}
-            fill={n.main ? accent : accentLight}
-            stroke={n.main ? "none" : accentMid}
-            strokeWidth="0.6"
-          />
-          <text
-            x={`${n.x}%`}
-            y={`${n.y}%`}
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontSize={n.main ? "5.5%" : "4%"}
-            fontWeight="700"
-            fill={n.main ? "#fff" : accent}
-          >
-            {n.label}
-          </text>
+          <circle cx={`${n.x}%`} cy={`${n.y}%`} r={`${n.r * 0.85}%`} fill={n.main ? accent : accentLight} stroke={n.main ? "none" : accentMid} strokeWidth="0.6" />
+          <text x={`${n.x}%`} y={`${n.y}%`} textAnchor="middle" dominantBaseline="central" fontSize={n.main ? "5.5%" : "4%"} fontWeight="700" fill={n.main ? "#fff" : accent}>{n.label}</text>
         </g>
       ))}
     </svg>
   );
 }
 
-function SwipeVisual({
-  accent,
-  accentLight,
-  accentMid,
-}: {
-  accent: string;
-  accentLight: string;
-  accentMid: string;
-}) {
+function SwipeVisual({ accent, accentLight, accentMid }: { accent: string; accentLight: string; accentMid: string }) {
   return (
     <div className="relative w-full h-full flex items-center justify-center">
       {[-1, 0, 1].map((offset) => (
-        <div
-          key={offset}
-          className="absolute rounded-2xl"
-          style={{
-            width: "58%",
-            height: "82%",
-            transform: `rotate(${offset * 7}deg) translateX(${offset * 16}px)`,
-            background: offset === 0 ? "#FFFFFF" : accentLight,
-            border: `1px solid ${offset === 0 ? accentMid : "#E8E8E8"}`,
-            boxShadow: offset === 0 ? `0 8px 28px ${accent}20` : "none",
-            zIndex: offset === 0 ? 3 : 1,
-          }}
-        >
+        <div key={offset} className="absolute rounded-2xl" style={{ width: "58%", height: "82%", transform: `rotate(${offset * 7}deg) translateX(${offset * 16}px)`, background: offset === 0 ? "#FFFFFF" : accentLight, border: `1px solid ${offset === 0 ? accentMid : "#E8E8E8"}`, boxShadow: offset === 0 ? `0 8px 28px ${accent}20` : "none", zIndex: offset === 0 ? 3 : 1 }}>
           {offset === 0 && (
             <div className="h-full flex flex-col p-4 gap-2">
-              <div
-                className="h-3 w-2/3 rounded-full"
-                style={{ background: accentLight }}
-              />
-              <div
-                className="h-2 w-1/2 rounded-full"
-                style={{ background: accentMid, opacity: 0.7 }}
-              />
-              <div
-                className="flex-1 rounded-xl mt-1"
-                style={{ background: accentLight }}
-              />
+              <div className="h-3 w-2/3 rounded-full" style={{ background: accentLight }} />
+              <div className="h-2 w-1/2 rounded-full" style={{ background: accentMid, opacity: 0.7 }} />
+              <div className="flex-1 rounded-xl mt-1" style={{ background: accentLight }} />
               <div className="flex justify-between mt-1 px-2">
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                  style={{
-                    background: "#FFF0F0",
-                    border: "1px solid #FFC0C0",
-                    color: "#E8394F",
-                  }}
-                >
-                  ✕
-                </div>
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center"
-                  style={{
-                    background: accentLight,
-                    border: `1px solid ${accentMid}`,
-                    color: accent,
-                    fontSize: 16,
-                  }}
-                >
-                  ♥
-                </div>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: "#FFF0F0", border: "1px solid #FFC0C0", color: "#E8394F" }}>✕</div>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: accentLight, border: `1px solid ${accentMid}`, color: accent, fontSize: 16 }}>♥</div>
               </div>
             </div>
           )}
@@ -201,15 +111,7 @@ function SwipeVisual({
   );
 }
 
-function NotifyVisual({
-  accent,
-  accentLight,
-  accentMid,
-}: {
-  accent: string;
-  accentLight: string;
-  accentMid: string;
-}) {
+function NotifyVisual({ accent, accentLight, accentMid }: { accent: string; accentLight: string; accentMid: string }) {
   const msgs = [
     { text: "Profile sent ✓", active: false },
     { text: "Recruiter notified", active: false },
@@ -218,42 +120,17 @@ function NotifyVisual({
   return (
     <div className="flex flex-col gap-2.5 w-full px-1 justify-center h-full">
       {msgs.map((msg, i) => (
-        <div
-          key={i}
-          className="flex items-center gap-3 rounded-xl px-4 py-3"
-          style={{
-            background: msg.active ? accentLight : "#F4F4F4",
-            border: `1px solid ${msg.active ? accentMid : "#EBEBEB"}`,
-          }}
-        >
-          <div
-            className="w-2 h-2 rounded-full flex-shrink-0"
-            style={{ background: msg.active ? accent : "#CCC" }}
-          />
-          <span
-            className="text-xs font-semibold flex-1"
-            style={{ color: msg.active ? accent : "#999" }}
-          >
-            {msg.text}
-          </span>
-          {msg.active && (
-            <span className="text-xs font-medium" style={{ color: accent }}>
-              Now
-            </span>
-          )}
+        <div key={i} className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ background: msg.active ? accentLight : "#F4F4F4", border: `1px solid ${msg.active ? accentMid : "#EBEBEB"}` }}>
+          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: msg.active ? accent : "#CCC" }} />
+          <span className="text-xs font-semibold flex-1" style={{ color: msg.active ? accent : "#999" }}>{msg.text}</span>
+          {msg.active && <span className="text-xs font-medium" style={{ color: accent }}>Now</span>}
         </div>
       ))}
     </div>
   );
 }
 
-function ChatVisual({
-  accent,
-  accentLight,
-}: {
-  accent: string;
-  accentLight: string;
-}) {
+function ChatVisual({ accent, accentLight }: { accent: string; accentLight: string }) {
   const messages = [
     { text: "Love your portfolio — free this week?", side: "left" },
     { text: "Yes! Wednesday works great.", side: "right" },
@@ -262,23 +139,8 @@ function ChatVisual({
   return (
     <div className="flex flex-col gap-2 w-full px-1 justify-center h-full">
       {messages.map((m, i) => (
-        <div
-          key={i}
-          className={`flex ${m.side === "right" ? "justify-end" : "justify-start"}`}
-        >
-          <div
-            className="max-w-[80%] px-3 py-2 text-xs leading-relaxed font-medium"
-            style={{
-              background: m.side === "right" ? accent : "#F2F2F2",
-              color: m.side === "right" ? "#fff" : "#333",
-              borderRadius:
-                m.side === "right"
-                  ? "16px 16px 4px 16px"
-                  : "16px 16px 16px 4px",
-            }}
-          >
-            {m.text}
-          </div>
+        <div key={i} className={`flex ${m.side === "right" ? "justify-end" : "justify-start"}`}>
+          <div className="max-w-[80%] px-3 py-2 text-xs leading-relaxed font-medium" style={{ background: m.side === "right" ? accent : "#F2F2F2", color: m.side === "right" ? "#fff" : "#333", borderRadius: m.side === "right" ? "16px 16px 4px 16px" : "16px 16px 16px 4px" }}>{m.text}</div>
         </div>
       ))}
     </div>
@@ -286,47 +148,51 @@ function ChatVisual({
 }
 
 function CardVisual({ card }: { card: (typeof cards)[0] }) {
-  const p = {
-    accent: card.accent,
-    accentLight: card.accentLight,
-    accentMid: card.accentMid,
-  };
+  const p = { accent: card.accent, accentLight: card.accentLight, accentMid: card.accentMid };
   switch (card.visual) {
-    case "network":
-      return <NetworkVisual {...p} />;
-    case "swipe":
-      return <SwipeVisual {...p} />;
-    case "notify":
-      return <NotifyVisual {...p} />;
-    case "chat":
-      return <ChatVisual accent={card.accent} accentLight={card.accentLight} />;
-    default:
-      return null;
+    case "network": return <NetworkVisual {...p} />;
+    case "swipe":   return <SwipeVisual {...p} />;
+    case "notify":  return <NotifyVisual {...p} />;
+    case "chat":    return <ChatVisual accent={card.accent} accentLight={card.accentLight} />;
+    default:        return null;
   }
 }
 
+// ─── StackCard ───────────────────────────────────────────────────────────────
+
+/**
+ * Each card receives a raw `progress` MotionValue (0 → 1) that represents
+ * how far through *its own segment* of the scroll we are.
+ * 
+ * - scale:   1 → 0.92  (shrinks as you scroll through it)
+ * - opacity: stays 1 until the very end, then snaps to 0 (except last card)
+ * 
+ * top offset uses CSS custom property so we can use different values per
+ * breakpoint without JS media queries.
+ */
 function StackCard({
   card,
   index,
   total,
-  scrollYProgress,
+  progress,
 }: {
   card: (typeof cards)[0];
   index: number;
   total: number;
-  scrollYProgress: ReturnType<typeof useScroll>["scrollYProgress"];
+  progress: ReturnType<typeof useMotionValue<number>>;
 }) {
-  const seg = 1 / total;
-  const start = index * seg;
-  const end = start + seg;
-
-  const scale = useTransform(scrollYProgress, [start, end], [1, 0.92]);
+  const scale   = useTransform(progress, [0, 1], [1, 0.92]);
   const opacity = useTransform(
-    scrollYProgress,
-    [start, end - 0.04, end],
+    progress,
+    [0, 0.85, 1],
     [1, 1, index === total - 1 ? 1 : 0],
   );
+
   const Icon = card.icon;
+
+  // These map to CSS custom properties injected below
+  const desktopTop = 48 + index * 16;
+  const mobileTop  =  8 + index * 10;
 
   return (
     <motion.div
@@ -334,23 +200,27 @@ function StackCard({
         scale,
         opacity,
         position: "sticky",
-        top: `${48 + index * 16}px`,
+        top: `var(--scard-top-${index})`,
         zIndex: index + 1,
         transformOrigin: "top center",
       }}
       className="w-full mb-4"
     >
+      <style>{`
+        :root { --scard-top-${index}: ${desktopTop}px; }
+        @media (max-width: 767px) { :root { --scard-top-${index}: ${mobileTop}px; } }
+      `}</style>
+
       <div
         className="relative rounded-3xl overflow-hidden mx-auto"
         style={{
           background: card.cardBg,
           border: `1px solid ${card.accentMid}70`,
           maxWidth: 1200,
-          minHeight: "78vh",
+          minHeight: "78svh",
           boxShadow: `0 2px 4px rgba(0,0,0,0.04), 0 20px 60px ${card.accent}12`,
         }}
       >
-        {/* Soft tinted wash on right side */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -358,12 +228,9 @@ function StackCard({
           }}
         />
 
-        <div
-          className="relative z-10 grid grid-cols-1 md:grid-cols-2"
-          style={{ minHeight: "78vh" }}
-        >
-          {/* Left */}
-          <div className="flex flex-col justify-center p-10 md:p-14">
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 md:min-h-[78svh]">
+          {/* Left — text */}
+          <div className="flex flex-col justify-center p-8 md:p-14">
             <div className="flex items-center gap-3 mb-7">
               <span
                 className="text-xs font-bold tracking-[0.13em] uppercase px-3 py-1.5 rounded-full"
@@ -388,38 +255,39 @@ function StackCard({
               {card.title}
             </h3>
 
-            <p
-              className="text-base leading-relaxed"
-              style={{ color: "#6E6E6E", maxWidth: 360 }}
-            >
+            <p className="text-base leading-relaxed" style={{ color: "#6E6E6E", maxWidth: 360 }}>
               {card.description}
             </p>
 
-            <div
-              className="mt-10 inline-flex items-center gap-2 text-sm font-semibold"
-              style={{ color: card.accent }}
-            >
+            {/* Mobile visual */}
+            <div className="block md:hidden mt-6">
+              <div
+                className="relative mx-auto overflow-hidden rounded-2xl"
+                style={{ background: card.accentLight, aspectRatio: "4/3", maxWidth: 300 }}
+              >
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <div className="h-36 w-36 rounded-full opacity-50" style={{ background: card.accentMid }} />
+                </div>
+                <div className="relative z-10 h-full w-full p-6">
+                  <CardVisual card={card} />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-10 inline-flex items-center gap-2 text-sm font-semibold" style={{ color: card.accent }}>
               <Icon size={15} strokeWidth={2.5} />
               <span>Learn more</span>
               <span>→</span>
             </div>
           </div>
 
-          {/* Right */}
+          {/* Right — desktop only */}
           <div className="hidden md:flex items-center justify-center p-10 relative">
             <div
               className="absolute rounded-full pointer-events-none"
-              style={{
-                width: 260,
-                height: 260,
-                background: card.accentLight,
-                opacity: 0.7,
-              }}
+              style={{ width: 260, height: 260, background: card.accentLight, opacity: 0.7 }}
             />
-            <div
-              className="relative z-10 w-full"
-              style={{ maxWidth: 250, aspectRatio: "1" }}
-            >
+            <div className="relative z-10 w-full" style={{ maxWidth: 250, aspectRatio: "1" }}>
               <CardVisual card={card} />
             </div>
           </div>
@@ -428,21 +296,67 @@ function StackCard({
         {/* Top accent line */}
         <div
           className="absolute top-0 left-10 right-10 h-px"
-          style={{
-            background: `linear-gradient(90deg, transparent, ${card.accent}60, transparent)`,
-          }}
+          style={{ background: `linear-gradient(90deg, transparent, ${card.accent}60, transparent)` }}
         />
       </div>
     </motion.div>
   );
 }
 
+// ─── ScrollStack ─────────────────────────────────────────────────────────────
+
+/**
+ * KEY FIX — window-based scroll tracking
+ * ----------------------------------------
+ * The original code used `useScroll({ target: containerRef })` which tracks
+ * scroll *inside* the container element. But the container never actually
+ * scrolls — the window does. On desktop this accidentally worked because
+ * framer-motion fell back to tracking the window scroll relative to the
+ * container's bounding box. On mobile it broke completely.
+ *
+ * The correct approach:
+ * 1. Attach a single `scroll` listener on `window`.
+ * 2. Read `containerRef.getBoundingClientRect()` to know where the section
+ *    starts and ends in the document.
+ * 3. Compute a normalised progress value [0, 1] for each card's segment and
+ *    push it into a per-card `MotionValue`.
+ * 4. Pass those MotionValues to each StackCard so it can derive scale/opacity.
+ *
+ * This is explicit, mobile-safe, and works regardless of browser chrome
+ * behaviour (collapsing address bar, momentum scroll, etc.).
+ */
 export function ScrollStack() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
+
+  // One MotionValue per card, each 0→1 over its scroll segment
+  const progressValues = cards.map(() => useMotionValue(0)); // eslint-disable-line react-hooks/rules-of-hooks
+
+  useEffect(() => {
+    const onScroll = () => {
+      const el = containerRef.current;
+      if (!el) return;
+
+      const rect    = el.getBoundingClientRect();
+      const total   = rect.height - window.innerHeight;
+      // How far the top of the section has scrolled past the viewport top.
+      // Clamped 0–total so we only animate while the section is on screen.
+      const scrolled = Math.max(0, Math.min(total, -rect.top));
+      const globalProgress = total > 0 ? scrolled / total : 0; // 0 → 1
+
+      cards.forEach((_, i) => {
+        const seg   = 1 / cards.length;
+        const start = i * seg;
+        const end   = start + seg;
+        // Normalise to 0–1 within this card's window
+        const raw   = (globalProgress - start) / (end - start);
+        progressValues[i].set(Math.max(0, Math.min(1, raw)));
+      });
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll(); // seed on mount
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <section
@@ -460,10 +374,7 @@ export function ScrollStack() {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <p
-            className="text-xs font-bold tracking-[0.28em] uppercase mb-4"
-            style={{ color: "black" }}
-          >
+          <p className="text-xs font-bold tracking-[0.28em] uppercase mb-4" style={{ color: "black" }}>
             Everything you need
           </p>
           <h2
@@ -476,7 +387,6 @@ export function ScrollStack() {
             }}
           >
             <span style={{ color: "#5B4FE8" }}>One platform - Multiple solutions</span>
-            
           </h2>
           <p className="mt-4 text-sm" style={{ color: "#ABABAB" }}>
             Scroll to explore ↓
@@ -484,11 +394,17 @@ export function ScrollStack() {
         </motion.div>
       </div>
 
-      {/* Stack container */}
+      {/*
+        Container height: cards.length × 100svh gives the total scroll distance.
+        svh = "small viewport height" — never changes when mobile browser chrome
+        collapses, so the height stays stable throughout the scroll.
+        
+        No overflow: hidden/auto here — that would break position:sticky entirely.
+      */}
       <div
         ref={containerRef}
         className="px-4 md:px-8 pb-32"
-        style={{ height: `${cards.length * 100}vh` }}
+        style={{ height: `${cards.length * 100}svh` }}
       >
         {cards.map((card, i) => (
           <StackCard
@@ -496,7 +412,7 @@ export function ScrollStack() {
             card={card}
             index={i}
             total={cards.length}
-            scrollYProgress={scrollYProgress}
+            progress={progressValues[i]}
           />
         ))}
       </div>

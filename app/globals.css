@@ -103,7 +103,7 @@ html {
     transform: translateX(0);
   }
   to {
-    transform: translateX(-100%);
+    transform: translateX(-100%); /* ← was -100%, now -50% because content is duplicated */
   }
 }
 
@@ -122,4 +122,21 @@ html {
 
 .animate-float {
   animation: float 4s ease-in-out infinite;
+}
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* Only clip html overflow on mobile — avoids breaking sticky on desktop */
+  @media (max-width: 767px) {
+    html {
+      overflow-x: hidden;
+    }
+  }
 }

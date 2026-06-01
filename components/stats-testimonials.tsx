@@ -65,24 +65,25 @@ export function StatsTestimonials() {
   ];
 
   const stats = [
-    { label: "Jobs Listed", value: counts.jobs, suffix: "+" },
-    { label: "Candidates", value: counts.candidates, suffix: "+" },
-    { label: "Companies", value: counts.companies, suffix: "+" },
-    { label: "College Partners", value: counts.colleges, suffix: "+" },
+    { label: "Jobs Listed",      value: counts.jobs,       suffix: "+" },
+    { label: "Candidates",       value: counts.candidates, suffix: "+" },
+    { label: "Companies",        value: counts.companies,  suffix: "+" },
+    { label: "College Partners", value: counts.colleges,   suffix: "+" },
   ];
 
   return (
     <section className="w-full bg-indigo-600 py-20 text-white">
-      <div className="max-w-7xl mx-auto px-8">
+      <div className="mx-auto max-w-7xl px-6 sm:px-8">
+
         {/* Header */}
         <motion.div
-          className="text-center mb-16"
+          className="mb-16 text-center"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+          <h2 className="mb-4 text-4xl font-bold md:text-5xl">
             Trusted by thousands
           </h2>
           <p className="text-lg text-white/70">
@@ -90,10 +91,20 @@ export function StatsTestimonials() {
           </p>
         </motion.div>
 
-        {/* Stats */}
+        {/*
+          FIX: replace the fixed-width flex row with a responsive CSS grid.
+
+          Before: flex row with each child at width:280px + flexShrink:0
+                  → 4 × 280px = 1120px minimum; overflows and gets clipped on mobile.
+
+          After:  grid-cols-2 on mobile (2 stats per row, each ~50% wide)
+                  grid-cols-4 from md up (original single-row layout).
+
+          The number font size also scales down slightly on mobile via clamp
+          so "250,000+" never wraps inside its cell.
+        */}
         <motion.div
-          className="mb-20"
-          style={{ display: "flex", justifyContent: "center", gap: 0 }}
+          className="mb-20 grid grid-cols-2 gap-y-10 md:grid-cols-4"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
@@ -102,21 +113,22 @@ export function StatsTestimonials() {
           {stats.map((stat, idx) => (
             <motion.div
               key={idx}
-              style={{ width: "280px", textAlign: "center", flexShrink: 0,marginRight: idx < 2 ? "64px" : "0px" }}
+              className="text-center"
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ delay: idx * 0.1 }}
               viewport={{ once: true }}
             >
               <div
-                className="text-5xl md:text-6xl font-bold mb-2"
+                className="mb-2 font-bold"
                 style={{
+                  fontSize: "clamp(2rem, 7vw, 3.75rem)",
                   fontVariantNumeric: "tabular-nums",
                   fontFeatureSettings: "'tnum'",
+                  lineHeight: 1.1,
                 }}
               >
-                {stat.value.toLocaleString()}
-                {stat.suffix}
+                {stat.value.toLocaleString()}{stat.suffix}
               </div>
               <div className="text-sm text-white/65">{stat.label}</div>
             </motion.div>
@@ -125,7 +137,7 @@ export function StatsTestimonials() {
 
         {/* Testimonials */}
         <motion.div
-          className="grid md:grid-cols-3 gap-6"
+          className="grid gap-6 md:grid-cols-3"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
@@ -138,24 +150,25 @@ export function StatsTestimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
               viewport={{ once: true }}
-              className="bg-white text-black rounded-2xl p-6 flex flex-col"
+              className="flex flex-col rounded-2xl bg-white p-6 text-black"
             >
-              <div className="flex gap-1 mb-4">
+              <div className="mb-4 flex gap-1">
                 {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                 ))}
               </div>
-              <p className="text-sm mb-4 leading-relaxed text-gray-700 flex-1">
+              <p className="mb-4 flex-1 text-sm leading-relaxed text-gray-700">
                 {testimonial.text}
               </p>
-              <div className="border-t border-gray-100 pt-4 mt-auto">
-                <div className="font-semibold text-sm text-gray-900">{testimonial.name}</div>
-                <div className="text-xs text-gray-400 mt-0.5">{testimonial.school}</div>
+              <div className="mt-auto border-t border-gray-100 pt-4">
+                <div className="text-sm font-semibold text-gray-900">{testimonial.name}</div>
+                <div className="mt-0.5 text-xs text-gray-400">{testimonial.school}</div>
                 <div className="text-xs text-gray-400">{testimonial.role}</div>
               </div>
             </motion.div>
           ))}
         </motion.div>
+
       </div>
     </section>
   );
