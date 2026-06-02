@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   MessageSquare,
   Search,
+  Sparkles,
   User,
   Zap,
 } from 'lucide-react'
@@ -17,6 +18,7 @@ import { cn } from '@/lib/utils'
 
 const links = [
   { href: '/candidate/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/candidate/swipe', label: 'Discover ✨', icon: Sparkles },
   { href: '/candidate/jobs', label: 'Browse Jobs', icon: Search },
   { href: '/candidate/applications', label: 'My Applications', icon: ClipboardList },
   { href: '/candidate/messages', label: 'Messages', icon: MessageSquare },

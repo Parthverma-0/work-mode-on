@@ -20,6 +20,8 @@ import {
 
   Search,
 
+  Sparkles,
+
   Users,
 
 } from 'lucide-react'
@@ -31,6 +33,8 @@ import { cn } from '@/lib/utils'
 const tabs = [
 
   { href: '/company/dashboard', label: 'Home', icon: LayoutDashboard },
+
+  { href: '/company/swipe', label: 'Discover', icon: Sparkles },
 
   { href: '/company/jobs', label: 'Jobs', icon: Briefcase },
 

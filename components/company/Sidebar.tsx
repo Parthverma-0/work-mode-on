@@ -18,6 +18,8 @@ import {
 
   Search,
 
+  Sparkles,
+
   Users,
 
   Zap,
@@ -35,6 +37,8 @@ import { cn } from '@/lib/utils'
 const links = [
 
   { href: '/company/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+
+  { href: '/company/swipe', label: 'Discover ✨', icon: Sparkles },
 
   { href: '/company/jobs', label: 'My Jobs', icon: Briefcase },
 

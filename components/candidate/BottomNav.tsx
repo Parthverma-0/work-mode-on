@@ -3,11 +3,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, useReducedMotion } from 'framer-motion'
-import { ClipboardList, LayoutDashboard, MessageSquare, Search, User } from 'lucide-react'
+import { ClipboardList, LayoutDashboard, MessageSquare, Search, Sparkles, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const tabs = [
   { href: '/candidate/dashboard', label: 'Home', icon: LayoutDashboard },
+  { href: '/candidate/swipe', label: 'Discover', icon: Sparkles },
   { href: '/candidate/jobs', label: 'Jobs', icon: Search },
   { href: '/candidate/applications', label: 'Applied', icon: ClipboardList },
   { href: '/candidate/messages', label: 'Inbox', icon: MessageSquare },
