@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
+import { ChatWidget } from '@/components/support/ChatWidget'
 import { Toaster } from 'sonner'
 
 const inter = Inter({ subsets: ["latin"] });
@@ -40,6 +41,7 @@ export default function RootLayout({
       <body className={`${inter.className} font-sans antialiased bg-white`}>
         <AuthProvider>
           {children}
+          <ChatWidget />
           <Toaster richColors position="top-center" />
         </AuthProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
