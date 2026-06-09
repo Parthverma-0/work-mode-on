@@ -45,14 +45,31 @@ export default function SelectRolePage() {
       return
     }
     setSaving(true)
-    const { error } = await supabase.from('profiles').update({ role }).eq('id', user.id)
-    setSaving(false)
+    // Only assign a role to accounts that don't have one yet. If the account already
+    // has a role this no-ops, preventing a candidate↔company switch on an existing user.
+    const { error } = await supabase
+      .from('profiles')
+      .update({ role })
+      .eq('id', user.id)
+      .is('role', null)
     if (error) {
+      setSaving(false)
       toast.error(error.message)
       return
     }
-    await refreshProfile(user.id)
-    router.refresh()
+
+    // Route by the role the account actually has now (the existing one if it was
+    // already set), not the one just picked.
+    const { profile: updated, onboardingDone: done } = await refreshProfile(user.id)
+    setSaving(false)
+
+    const effectiveRole = updated?.role
+    if (effectiveRole && done) {
+      window.location.assign(
+        effectiveRole === 'candidate' ? '/candidate/dashboard' : '/company/dashboard',
+      )
+      return
+    }
     window.location.assign('/onboarding')
   }
 

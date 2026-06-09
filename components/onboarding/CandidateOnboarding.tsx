@@ -1,13 +1,15 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { CheckCircle2, FileText, Upload, X } from 'lucide-react'
+import { BookOpen, CalendarDays, CheckCircle2, FileText, GraduationCap, MapPin, Upload, X } from 'lucide-react'
 import { OnboardingFrame } from '@/components/onboarding/OnboardingFrame'
 import { SkillsInput } from '@/components/candidate/SkillsInput'
 import { Button } from '@/components/ui/button'
+import { Combobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { CITIES, COLLEGES, COURSES, GRADUATION_YEARS } from '@/lib/onboarding-options'
 import { supabase } from '@/lib/supabase'
 import { uploadCandidateResumeBlob } from '@/lib/upload-resume-client'
 import { cn } from '@/lib/utils'
@@ -229,7 +231,15 @@ export function CandidateOnboarding({ userId }: CandidateOnboardingProps) {
               <Label htmlFor="city" className="text-[#475569]">
                 City
               </Label>
-              <Input id="city" className={fieldClass} value={city} onChange={(e) => setCity(e.target.value)} placeholder="Where you’re based" />
+              <Combobox
+                id="city"
+                value={city}
+                onChange={setCity}
+                options={CITIES}
+                placeholder="Where you’re based"
+                icon={<MapPin className="size-4" />}
+                inputClassName={fieldClass}
+              />
               {errors.city && <p className="text-sm text-red-600">{errors.city}</p>}
             </div>
             <div className="space-y-2">
@@ -248,26 +258,44 @@ export function CandidateOnboarding({ userId }: CandidateOnboardingProps) {
               <Label htmlFor="college" className="text-[#475569]">
                 College
               </Label>
-              <Input id="college" className={fieldClass} value={college} onChange={(e) => setCollege(e.target.value)} />
+              <Combobox
+                id="college"
+                value={college}
+                onChange={setCollege}
+                options={COLLEGES}
+                placeholder="Start typing your college…"
+                icon={<GraduationCap className="size-4" />}
+                inputClassName={fieldClass}
+              />
               {errors.college && <p className="text-sm text-red-600">{errors.college}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="course" className="text-[#475569]">
                 Course / major
               </Label>
-              <Input id="course" className={fieldClass} value={course} onChange={(e) => setCourse(e.target.value)} />
+              <Combobox
+                id="course"
+                value={course}
+                onChange={setCourse}
+                options={COURSES}
+                placeholder="e.g. B.Tech — Computer Science"
+                icon={<BookOpen className="size-4" />}
+                inputClassName={fieldClass}
+              />
               {errors.course && <p className="text-sm text-red-600">{errors.course}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="graduationYear" className="text-[#475569]">
                 Graduation year
               </Label>
-              <Input
+              <Combobox
                 id="graduationYear"
-                type="number"
-                className={fieldClass}
                 value={graduationYear}
-                onChange={(e) => setGraduationYear(e.target.value)}
+                onChange={setGraduationYear}
+                options={GRADUATION_YEARS}
+                placeholder="Select year"
+                icon={<CalendarDays className="size-4" />}
+                inputClassName={fieldClass}
               />
               {errors.graduationYear && <p className="text-sm text-red-600">{errors.graduationYear}</p>}
             </div>

@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
@@ -74,9 +75,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [onboardingDone, setOnboardingDone] = useState(false)
   const [loading, setLoading] = useState(true)
 
+  // Keep the latest user id in a ref so refreshProfile can stay referentially
+  // stable — otherwise it changes identity on every login and forces the auth
+  // init effect below to tear down and re-run (double getSession/refresh + listener churn).
+  const userIdRef = useRef<string | null>(null)
+  useEffect(() => {
+    userIdRef.current = user?.id ?? null
+  }, [user?.id])
+
   const refreshProfile = useCallback(
     async (targetUserId?: string): Promise<RefreshResult> => {
-      const resolvedUserId = targetUserId ?? user?.id
+      const resolvedUserId = targetUserId ?? userIdRef.current
 
       if (!resolvedUserId) {
         setProfile(null)
@@ -103,14 +112,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return { profile: data as Profile, onboardingDone: done }
     },
-    [user?.id],
+    [],
   )
 
   const applyPendingRole = useCallback(async (authUser: User) => {
     const pendingRole = localStorage.getItem('wmo_pending_role') as Role | null
     if (!pendingRole) return
 
-    await supabase.from('profiles').update({ role: pendingRole }).eq('id', authUser.id)
+    // Only assign a role when the account doesn't already have one. Never overwrite
+    // an existing role — that's how a single email ends up with both a candidate and
+    // a company profile.
+    await supabase
+      .from('profiles')
+      .update({ role: pendingRole })
+      .eq('id', authUser.id)
+      .is('role', null)
     localStorage.removeItem('wmo_pending_role')
   }, [])
 

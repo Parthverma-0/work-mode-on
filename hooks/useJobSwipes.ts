@@ -40,54 +40,20 @@ export function useJobSwipes(candidateProfileId: string | undefined) {
       .then(({ data }) => setResumeUrl((data?.resume_url as string | null) ?? null))
   }, [candidateProfileId])
 
-  const fetchBatch = useCallback(
-    async (excludeIds: string[] = []) => {
-      if (!candidateProfileId) return []
+  const fetchBatch = useCallback(async () => {
+    if (!candidateProfileId) return []
 
-      const { data: swiped } = await supabase
-        .from('job_swipes')
-        .select('job_id')
-        .eq('candidate_id', candidateProfileId)
-
-      const swipedIds = new Set([
-        ...(swiped?.map((s) => s.job_id as string) ?? []),
-        ...excludeIds,
-        ...deckRef.current.map((j) => j.id),
-      ])
-
-      let q = supabase
-        .from('jobs')
-        .select(
-          `
-          id,
-          company_id,
-          title,
-          type,
-          description,
-          skills_required,
-          location,
-          mode,
-          stipend_min,
-          stipend_max,
-          is_active,
-          posted_at,
-          company_profiles ( company_name, industry, logo_url )
-        `,
-        )
-        .eq('is_active', true)
-        .order('posted_at', { ascending: false })
-        .limit(BATCH_SIZE)
-
-      if (swipedIds.size > 0) {
-        q = q.not('id', 'in', `(${[...swipedIds].join(',')})`)
-      }
-
-      const { data, error: qErr } = await q
-      if (qErr) throw new Error(qErr.message)
-      return (data ?? []) as SwipeJob[]
-    },
-    [candidateProfileId],
-  )
+    // Exclusion happens in the database (see get_unswiped_jobs). p_exclude carries
+    // the ids already in the deck so a refill doesn't repeat unswiped cards —
+    // this avoids cramming every swiped id into the URL (which eventually 414s).
+    const { data, error: qErr } = await supabase.rpc('get_unswiped_jobs', {
+      p_candidate_id: candidateProfileId,
+      p_limit: BATCH_SIZE,
+      p_exclude: deckRef.current.map((j) => j.id),
+    })
+    if (qErr) throw new Error(qErr.message)
+    return (data ?? []) as SwipeJob[]
+  }, [candidateProfileId])
 
   const loadInitial = useCallback(async () => {
     if (!candidateProfileId) {

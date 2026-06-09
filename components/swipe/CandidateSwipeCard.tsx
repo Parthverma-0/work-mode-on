@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { ExternalLink, GraduationCap, MapPin } from 'lucide-react'
+import { Briefcase, ExternalLink, GraduationCap, MapPin } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import type { SwipeCandidate } from '@/lib/swipe-types'
+import type { SwipeApplicant } from '@/lib/swipe-types'
 import { cn } from '@/lib/utils'
 
 function initials(name: string | null | undefined) {
@@ -15,12 +15,13 @@ function initials(name: string | null | undefined) {
 }
 
 type CandidateSwipeCardProps = {
-  candidate: SwipeCandidate
+  applicant: SwipeApplicant
 }
 
-export function CandidateSwipeCard({ candidate }: CandidateSwipeCardProps) {
+export function CandidateSwipeCard({ applicant }: CandidateSwipeCardProps) {
   const [expanded, setExpanded] = useState(false)
-  const prof = Array.isArray(candidate.profiles) ? candidate.profiles[0] : candidate.profiles
+  const candidate = applicant.candidate
+  const prof = applicant.profile
   const name = prof?.full_name ?? 'Candidate'
   const skills = candidate.skills ?? []
   const visibleSkills = skills.slice(0, 8)
@@ -31,6 +32,13 @@ export function CandidateSwipeCard({ candidate }: CandidateSwipeCardProps) {
 
   return (
     <div className="flex max-h-[min(72vh,640px)] flex-col p-5 sm:p-6">
+      {applicant.jobTitle && (
+        <div className="mb-4 flex items-center justify-center gap-1.5 rounded-full bg-[#EEF2FF] px-3 py-1.5 text-xs font-semibold text-[#4338CA]">
+          <Briefcase className="size-3.5 shrink-0" aria-hidden />
+          Applied for {applicant.jobTitle}
+        </div>
+      )}
+
       <div className="flex flex-col items-center text-center">
         <Avatar className="size-16 border-2 border-[#EEF2FF] shadow-sm">
           <AvatarImage src={prof?.avatar_url ?? undefined} alt="" />
@@ -102,6 +110,13 @@ export function CandidateSwipeCard({ candidate }: CandidateSwipeCardProps) {
               {expanded ? 'Show less' : 'Read more'}
             </button>
           )}
+        </div>
+      )}
+
+      {applicant.coverNote && (
+        <div className="mt-4 rounded-xl bg-[#F9FAFB] px-4 py-3 text-left">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-[#9CA3AF]">Cover note</p>
+          <p className="mt-1 text-sm leading-relaxed text-[#4B5563]">{applicant.coverNote}</p>
         </div>
       )}
 

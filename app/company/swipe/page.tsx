@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Sparkles } from 'lucide-react'
 import { CandidateSwipeCard } from '@/components/swipe/CandidateSwipeCard'
+import { MatchModal } from '@/components/swipe/MatchModal'
 import { MessageModal } from '@/components/company/MessageModal'
 import { SwipeDeck } from '@/components/swipe/SwipeDeck'
 import { useAuth } from '@/context/AuthContext'
@@ -10,7 +11,7 @@ import { useCandidateSwipes } from '@/hooks/useCandidateSwipes'
 import { useCompany } from '@/hooks/useCompany'
 import { useCompanyJobs } from '@/hooks/useCompanyJobs'
 import { supabase } from '@/lib/supabase'
-import type { SwipeCandidate } from '@/lib/swipe-types'
+import type { SwipeApplicant } from '@/lib/swipe-types'
 
 export default function CompanySwipePage() {
   const { user } = useAuth()
@@ -19,16 +20,18 @@ export default function CompanySwipePage() {
   const { deck, loading, canUndo, swipeLeft, swipeRight, undo } = useCandidateSwipes(company?.id)
 
   const [msgOpen, setMsgOpen] = useState(false)
-  const [msgCandidate, setMsgCandidate] = useState<SwipeCandidate | null>(null)
+  const [msgApplicant, setMsgApplicant] = useState<SwipeApplicant | null>(null)
+  const [matchOpen, setMatchOpen] = useState(false)
+  const [matchApplicant, setMatchApplicant] = useState<SwipeApplicant | null>(null)
 
-  function openMessage(candidate: SwipeCandidate) {
-    setMsgCandidate(candidate)
+  function openMessage(applicant: SwipeApplicant) {
+    setMsgApplicant(applicant)
     setMsgOpen(true)
   }
 
-  function profileName(candidate: SwipeCandidate) {
-    const prof = Array.isArray(candidate.profiles) ? candidate.profiles[0] : candidate.profiles
-    return prof?.full_name ?? 'Candidate'
+  function openMatch(applicant: SwipeApplicant) {
+    setMatchApplicant(applicant)
+    setMatchOpen(true)
   }
 
   return (
@@ -36,13 +39,13 @@ export default function CompanySwipePage() {
       <div className="mb-6 text-center md:mb-8">
         <div className="inline-flex items-center gap-2 rounded-full bg-[#EEF2FF] px-3 py-1 text-xs font-semibold text-[#4338CA]">
           <Sparkles className="size-3.5" aria-hidden />
-          Discover
+          Review applicants
         </div>
         <h1 className="mt-3 text-2xl font-semibold tracking-tight text-[#0A0A0A] md:text-3xl">
-          Find your next hire
+          Your applicants
         </h1>
         <p className="mt-1 text-sm text-[#6B7280]">
-          Swipe right on candidates you want to connect with
+          Swipe right to shortlist · left to pass
         </p>
       </div>
 
@@ -53,30 +56,51 @@ export default function CompanySwipePage() {
           canUndo={canUndo}
           overlayVariant="candidate"
           controlsVariant="company"
-          emptyTitle="You've seen all open-to-work candidates!"
-          emptyCtaLabel="Search all candidates →"
-          emptyCtaHref="/company/candidates"
+          emptyTitle="No applicants waiting for a decision"
+          emptyCtaLabel="View all applicants →"
+          emptyCtaHref="/company/applicants"
           onSwipeLeft={swipeLeft}
-          onSwipeRight={(candidate) => swipeRight(candidate, openMessage)}
+          onSwipeRight={(applicant) => swipeRight(applicant, openMatch)}
           onUndo={undo}
-          renderCard={(candidate) => <CandidateSwipeCard candidate={candidate} />}
+          renderCard={(applicant) => <CandidateSwipeCard applicant={applicant} />}
         />
       </div>
+
+      <MatchModal
+        open={matchOpen}
+        onOpenChange={setMatchOpen}
+        subtitle={
+          matchApplicant
+            ? `${matchApplicant.profile?.full_name ?? 'This candidate'} applied${
+                matchApplicant.jobTitle ? ` for ${matchApplicant.jobTitle}` : ''
+              } and you shortlisted them. Start the conversation!`
+            : ''
+        }
+        leftName={matchApplicant?.profile?.full_name ?? 'Candidate'}
+        leftAvatar={matchApplicant?.profile?.avatar_url}
+        rightName={company?.company_name ?? 'You'}
+        rightAvatar={company?.logo_url}
+        primaryLabel="Send a message"
+        onPrimary={() => {
+          setMatchOpen(false)
+          if (matchApplicant) openMessage(matchApplicant)
+        }}
+      />
 
       <MessageModal
         open={msgOpen}
         onOpenChange={(open) => {
           setMsgOpen(open)
-          if (!open) setMsgCandidate(null)
+          if (!open) setMsgApplicant(null)
         }}
-        receiverName={msgCandidate ? profileName(msgCandidate) : ''}
+        receiverName={msgApplicant?.profile?.full_name ?? 'Candidate'}
         jobs={jobs.map((j) => ({ id: j.id, title: j.title }))}
-        defaultJobId={null}
+        defaultJobId={msgApplicant?.jobId ?? null}
         onSend={async (content, jobId) => {
-          if (!user?.id || !msgCandidate?.user_id) return { error: 'Missing user.' }
+          if (!user?.id || !msgApplicant?.candidate.user_id) return { error: 'Missing user.' }
           const { error } = await supabase.from('messages').insert({
             sender_id: user.id,
-            receiver_id: msgCandidate.user_id,
+            receiver_id: msgApplicant.candidate.user_id,
             job_id: jobId,
             content,
             is_read: false,

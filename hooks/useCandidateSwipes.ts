@@ -1,80 +1,29 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
-import type { SwipeCandidate, SwipeDirection } from '@/lib/swipe-types'
+import type { CandidateProfileLite, ProfileLite } from '@/lib/company-types'
+import type { SwipeApplicant } from '@/lib/swipe-types'
 
-const BATCH_SIZE = 20
-const PRELOAD_THRESHOLD = 3
+// Applications still awaiting a decision from the company.
+const PENDING_STATUSES = ['submitted', 'viewed']
+const MAX_DECK = 100
 
-type LastCandidateSwipe = {
-  candidate: SwipeCandidate
-  swipeId: string
-  direction: SwipeDirection
-}
+type LastDecision = { applicant: SwipeApplicant; prevStatus: string }
 
+/**
+ * Company applicant-review deck: shows only candidates who applied to this
+ * company's jobs (one card per application). Swiping right shortlists the
+ * application, left rejects it — the decision is the application's status.
+ */
 export function useCandidateSwipes(companyProfileId: string | undefined) {
-  const [deck, setDeck] = useState<SwipeCandidate[]>([])
+  const [deck, setDeck] = useState<SwipeApplicant[]>([])
   const [loading, setLoading] = useState(true)
-  const [fetchingMore, setFetchingMore] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [lastSwipe, setLastSwipe] = useState<LastCandidateSwipe | null>(null)
-  const deckRef = useRef(deck)
-  deckRef.current = deck
+  const [lastDecision, setLastDecision] = useState<LastDecision | null>(null)
 
-  const fetchBatch = useCallback(
-    async (excludeIds: string[] = []) => {
-      if (!companyProfileId) return []
-
-      const { data: swiped } = await supabase
-        .from('candidate_swipes')
-        .select('candidate_id')
-        .eq('company_id', companyProfileId)
-
-      const swipedIds = new Set([
-        ...(swiped?.map((s) => s.candidate_id as string) ?? []),
-        ...excludeIds,
-        ...deckRef.current.map((c) => c.id),
-      ])
-
-      let q = supabase
-        .from('candidate_profiles')
-        .select(
-          'id, user_id, headline, bio, skills, college, graduation_year, resume_url, portfolio_url, city, course, open_to_work',
-        )
-        .eq('open_to_work', true)
-        .limit(BATCH_SIZE)
-
-      if (swipedIds.size > 0) {
-        q = q.not('id', 'in', `(${[...swipedIds].join(',')})`)
-      }
-
-      const { data: rows, error: qErr } = await q
-      if (qErr) throw new Error(qErr.message)
-
-      const list = rows ?? []
-      const userIds = [...new Set(list.map((r) => r.user_id).filter(Boolean))] as string[]
-
-      let profileMap = new Map<string, { id: string; full_name: string | null; avatar_url: string | null }>()
-      if (userIds.length) {
-        const { data: profs } = await supabase
-          .from('profiles')
-          .select('id, full_name, avatar_url')
-          .in('id', userIds)
-        profileMap = new Map((profs ?? []).map((p) => [p.id as string, p]))
-      }
-
-      return list.map((r) => ({
-        ...r,
-        profiles: profileMap.get(r.user_id) ?? null,
-      })) as SwipeCandidate[]
-    },
-    [companyProfileId],
-  )
-
-  const loadInitial = useCallback(async () => {
+  const load = useCallback(async () => {
     if (!companyProfileId) {
       setDeck([])
       setLoading(false)
@@ -83,125 +32,162 @@ export function useCandidateSwipes(companyProfileId: string | undefined) {
     setLoading(true)
     setError(null)
     try {
-      const candidates = await fetchBatch()
-      setDeck(candidates)
-      setHasMore(candidates.length >= BATCH_SIZE)
+      const { data: jobRows, error: jobErr } = await supabase
+        .from('jobs')
+        .select('id, title')
+        .eq('company_id', companyProfileId)
+      if (jobErr) throw new Error(jobErr.message)
+
+      const jobIds = (jobRows ?? []).map((j) => j.id as string)
+      if (!jobIds.length) {
+        setDeck([])
+        setLoading(false)
+        return
+      }
+      const jobTitle = new Map((jobRows ?? []).map((j) => [j.id as string, j.title as string]))
+
+      const { data: apps, error: appErr } = await supabase
+        .from('applications')
+        .select(
+          `
+          id,
+          job_id,
+          status,
+          cover_note,
+          applied_at,
+          candidate_profiles (
+            id, user_id, headline, skills, college, graduation_year,
+            resume_url, portfolio_url, city, course, open_to_work, bio
+          )
+        `,
+        )
+        .in('job_id', jobIds)
+        .in('status', PENDING_STATUSES)
+        .order('applied_at', { ascending: true })
+        .limit(MAX_DECK)
+      if (appErr) throw new Error(appErr.message)
+
+      const rows = apps ?? []
+
+      const userIds = [
+        ...new Set(
+          rows
+            .map((r) => {
+              const cp = Array.isArray(r.candidate_profiles)
+                ? r.candidate_profiles[0]
+                : r.candidate_profiles
+              return (cp as CandidateProfileLite | null)?.user_id
+            })
+            .filter(Boolean),
+        ),
+      ] as string[]
+
+      let profMap = new Map<string, ProfileLite>()
+      if (userIds.length) {
+        const { data: profs } = await supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url')
+          .in('id', userIds)
+        profMap = new Map((profs ?? []).map((p) => [p.id as string, p as ProfileLite]))
+      }
+
+      const applicants: SwipeApplicant[] = rows
+        .map((r) => {
+          const cp = (
+            Array.isArray(r.candidate_profiles) ? r.candidate_profiles[0] : r.candidate_profiles
+          ) as CandidateProfileLite | null
+          if (!cp) return null
+          return {
+            id: r.id as string,
+            jobId: r.job_id as string,
+            jobTitle: jobTitle.get(r.job_id as string) ?? null,
+            status: r.status as string,
+            coverNote: (r.cover_note as string | null) ?? null,
+            candidate: cp,
+            profile: cp.user_id ? profMap.get(cp.user_id) ?? null : null,
+          } satisfies SwipeApplicant
+        })
+        .filter((a): a is SwipeApplicant => a !== null)
+
+      setDeck(applicants)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load candidates')
+      setError(e instanceof Error ? e.message : 'Failed to load applicants')
       setDeck([])
     }
     setLoading(false)
-  }, [companyProfileId, fetchBatch])
+  }, [companyProfileId])
 
   useEffect(() => {
-    loadInitial()
-  }, [loadInitial])
+    load()
+  }, [load])
 
-  const loadMore = useCallback(async () => {
-    if (!companyProfileId || fetchingMore || !hasMore) return
-    setFetchingMore(true)
-    try {
-      const candidates = await fetchBatch()
-      if (candidates.length === 0) {
-        setHasMore(false)
-      } else {
-        setDeck((prev) => {
-          const existing = new Set(prev.map((c) => c.id))
-          const fresh = candidates.filter((c) => !existing.has(c.id))
-          return [...prev, ...fresh]
-        })
-        setHasMore(candidates.length >= BATCH_SIZE)
-      }
-    } catch {
-      /* silent */
-    }
-    setFetchingMore(false)
-  }, [companyProfileId, fetchBatch, fetchingMore, hasMore])
-
-  useEffect(() => {
-    if (loading || fetchingMore || !hasMore) return
-    if (deck.length < PRELOAD_THRESHOLD) loadMore()
-  }, [deck.length, loading, fetchingMore, hasMore, loadMore])
-
-  const popTop = useCallback(() => {
-    setDeck((prev) => prev.slice(1))
+  const popTop = useCallback((id: string) => {
+    setDeck((prev) => prev.filter((a) => a.id !== id))
   }, [])
 
-  const recordSwipe = useCallback(
-    async (candidate: SwipeCandidate, direction: SwipeDirection) => {
-      if (!companyProfileId) return null
-
-      const { data, error: swipeErr } = await supabase
-        .from('candidate_swipes')
-        .upsert(
-          { company_id: companyProfileId, candidate_id: candidate.id, direction },
-          { onConflict: 'company_id,candidate_id' },
-        )
-        .select('id')
-        .single()
-
-      if (swipeErr) throw new Error(swipeErr.message)
-      return data.id as string
+  const decide = useCallback(
+    async (applicant: SwipeApplicant, status: 'shortlisted' | 'rejected') => {
+      const { error: upErr } = await supabase
+        .from('applications')
+        .update({ status })
+        .eq('id', applicant.id)
+      if (upErr) throw new Error(upErr.message)
     },
-    [companyProfileId],
+    [],
   )
 
   const swipeLeft = useCallback(
-    async (candidate: SwipeCandidate) => {
+    async (applicant: SwipeApplicant) => {
       try {
-        const swipeId = await recordSwipe(candidate, 'left')
-        if (!swipeId) return
-        setLastSwipe({ candidate, swipeId, direction: 'left' })
-        popTop()
+        await decide(applicant, 'rejected')
+        setLastDecision({ applicant, prevStatus: applicant.status })
+        popTop(applicant.id)
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : 'Could not skip candidate')
+        toast.error(e instanceof Error ? e.message : 'Could not update application')
       }
     },
-    [recordSwipe, popTop],
+    [decide, popTop],
   )
 
   const swipeRight = useCallback(
-    async (candidate: SwipeCandidate, onSaved?: (candidate: SwipeCandidate) => void) => {
+    async (applicant: SwipeApplicant, onMatch?: (a: SwipeApplicant) => void) => {
       try {
-        const swipeId = await recordSwipe(candidate, 'right')
-        if (!swipeId) return
-        setLastSwipe({ candidate, swipeId, direction: 'right' })
-        popTop()
-        toast.success('Candidate saved! Send them a message?', {
-          action: {
-            label: 'Message Now →',
-            onClick: () => onSaved?.(candidate),
-          },
-        })
+        await decide(applicant, 'shortlisted')
+        setLastDecision({ applicant, prevStatus: applicant.status })
+        popTop(applicant.id)
+        // The deck only contains candidates who already applied, so a shortlist is
+        // always a mutual match — fire the match moment.
+        onMatch?.(applicant)
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : 'Could not save candidate')
+        toast.error(e instanceof Error ? e.message : 'Could not update application')
       }
     },
-    [recordSwipe, popTop],
+    [decide, popTop],
   )
 
   const undo = useCallback(async () => {
-    if (!lastSwipe) return
+    if (!lastDecision) return
     try {
-      await supabase.from('candidate_swipes').delete().eq('id', lastSwipe.swipeId)
-      setDeck((prev) => [lastSwipe.candidate, ...prev])
-      setLastSwipe(null)
-      toast.message('Swipe undone')
+      await supabase
+        .from('applications')
+        .update({ status: lastDecision.prevStatus })
+        .eq('id', lastDecision.applicant.id)
+      setDeck((prev) => [lastDecision.applicant, ...prev])
+      setLastDecision(null)
+      toast.message('Decision undone')
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Could not undo')
     }
-  }, [lastSwipe])
+  }, [lastDecision])
 
   return {
     deck,
     loading,
     error,
-    hasMore,
-    lastSwipe,
-    canUndo: Boolean(lastSwipe),
+    canUndo: Boolean(lastDecision),
     swipeLeft,
     swipeRight,
     undo,
-    refresh: loadInitial,
+    refresh: load,
   }
 }

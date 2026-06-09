@@ -18,7 +18,6 @@ export default function AuthFinishPage() {
 
     ;(async () => {
       const { profile, onboardingDone } = await refreshProfile(user.id)
-      await router.refresh()
       const destination = !profile?.role
         ? '/auth/signup'
         : !onboardingDone

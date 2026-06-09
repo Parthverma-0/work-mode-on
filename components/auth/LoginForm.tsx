@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { FormEvent, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,7 +13,6 @@ import { supabase } from '@/lib/supabase'
 import { fadeUp, staggerContainer } from '@/lib/wmo-motion'
 
 export function LoginForm() {
-  const router = useRouter()
   const reduceMotion = useReducedMotion()
   const { signIn, signInWithGoogle, refreshProfile } = useAuth()
   const [email, setEmail] = useState('')
@@ -51,7 +49,6 @@ export function LoginForm() {
     }
 
     const { profile, onboardingDone } = await refreshProfile(session.user.id)
-    await router.refresh()
 
     const destination = !profile?.role
       ? '/auth/select-role'

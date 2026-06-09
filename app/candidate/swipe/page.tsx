@@ -1,8 +1,9 @@
 'use client'
 
-import { Sparkles } from 'lucide-react'
+import { Flame, Star, X, Check } from 'lucide-react'
 import { JobSwipeCard } from '@/components/swipe/JobSwipeCard'
 import { SwipeDeck } from '@/components/swipe/SwipeDeck'
+import { PageHeader } from '@/components/dashboard/PageHeader'
 import { useAuth } from '@/context/AuthContext'
 import { useCandidate } from '@/hooks/useCandidate'
 import { useJobSwipes } from '@/hooks/useJobSwipes'
@@ -15,21 +16,51 @@ export default function CandidateSwipePage() {
   )
 
   return (
-    <div className="flex min-h-[calc(100vh-10rem)] flex-col">
-      <div className="mb-6 text-center md:mb-8">
-        <div className="inline-flex items-center gap-2 rounded-full bg-[#EEF2FF] px-3 py-1 text-xs font-semibold text-[#4338CA]">
-          <Sparkles className="size-3.5" aria-hidden />
-          Discover
-        </div>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-[#0A0A0A] md:text-3xl">
-          Swipe to apply
-        </h1>
-        <p className="mt-1 text-sm text-[#6B7280]">
-          Right to apply instantly · Left to pass · Star to save for later
-        </p>
+    <div className="relative flex min-h-[calc(100vh-9rem)] flex-col">
+      {/* Ambient Tinder-style glow behind the deck */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-16 h-80 w-80 -translate-x-1/2 rounded-full bg-[#4F46E5]/12 blur-[110px]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-40 h-64 w-64 -translate-x-1/2 rounded-full bg-emerald-400/10 blur-[100px]"
+      />
+
+      <PageHeader
+        align="center"
+        eyebrow="Discover"
+        eyebrowIcon={<Flame className="size-3.5" aria-hidden />}
+        title={
+          <>
+            Swipe to <span className="gradient-text-indigo">apply</span>
+          </>
+        }
+      />
+
+      {/* Legend */}
+      <div className="relative mt-4 flex items-center justify-center gap-3 text-xs font-medium text-[#64748b]">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="flex size-5 items-center justify-center rounded-full bg-red-50 text-red-500">
+            <X className="size-3" aria-hidden />
+          </span>
+          Pass
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="flex size-5 items-center justify-center rounded-full bg-amber-50 text-amber-500">
+            <Star className="size-3 fill-amber-400" aria-hidden />
+          </span>
+          Save
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="flex size-5 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
+            <Check className="size-3" aria-hidden />
+          </span>
+          Apply
+        </span>
       </div>
 
-      <div className="flex flex-1 flex-col items-center justify-center">
+      <div className="relative mt-6 flex flex-1 flex-col items-center justify-center">
         <SwipeDeck
           items={deck}
           loading={loading}
@@ -37,7 +68,7 @@ export default function CandidateSwipePage() {
           overlayVariant="job"
           showSuperLike
           controlsVariant="job"
-          emptyTitle="You've seen all available jobs!"
+          emptyTitle="You're all caught up!"
           emptyCtaLabel="Browse all jobs →"
           emptyCtaHref="/candidate/jobs"
           onSwipeLeft={swipeLeft}

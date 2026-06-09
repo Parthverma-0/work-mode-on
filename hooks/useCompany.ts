@@ -4,9 +4,14 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { CompanyProfileRow } from '@/lib/company-types'
 
+// Session cache — see useCandidate for rationale (instant repeat navigations).
+const cache = new Map<string, CompanyProfileRow | null>()
+
 export function useCompany(userId: string | undefined) {
-  const [company, setCompany] = useState<CompanyProfileRow | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [company, setCompany] = useState<CompanyProfileRow | null>(() =>
+    userId && cache.has(userId) ? cache.get(userId)! : null,
+  )
+  const [loading, setLoading] = useState(() => !(userId && cache.has(userId)))
   const [error, setError] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
@@ -15,7 +20,7 @@ export function useCompany(userId: string | undefined) {
       setLoading(false)
       return
     }
-    setLoading(true)
+    if (!cache.has(userId)) setLoading(true)
     setError(null)
     const { data, error: qErr } = await supabase
       .from('company_profiles')
@@ -27,16 +32,21 @@ export function useCompany(userId: string | undefined) {
 
     if (qErr) {
       setError(qErr.message)
-      setCompany(null)
     } else {
-      setCompany(data as CompanyProfileRow | null)
+      const row = (data as CompanyProfileRow | null) ?? null
+      cache.set(userId, row)
+      setCompany(row)
     }
     setLoading(false)
   }, [userId])
 
   useEffect(() => {
+    if (userId && cache.has(userId)) {
+      setCompany(cache.get(userId)!)
+      setLoading(false)
+    }
     refresh()
-  }, [refresh])
+  }, [userId, refresh])
 
   return { company, loading, error, refresh }
 }

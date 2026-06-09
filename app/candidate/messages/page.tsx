@@ -1,8 +1,10 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import { MessageCircle } from 'lucide-react'
 import { ChatWindow } from '@/components/company/ChatWindow'
 import { ConversationList } from '@/components/company/ConversationList'
+import { PageHeader } from '@/components/dashboard/PageHeader'
 import { useAuth } from '@/context/AuthContext'
 import { useMessages } from '@/hooks/useMessages'
 import type { MessageRow } from '@/lib/company-types'
@@ -52,17 +54,19 @@ export default function CandidateMessagesPage() {
   )
 
   return (
-    <div className="space-y-6 pb-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-[#0A0A0A]">Messages</h1>
-        <p className="mt-1 text-sm text-[#6B7280]">
-          See recruiter conversations and reply here.
-        </p>
-      </div>
+    <div className="space-y-6 pb-4">
+      <PageHeader
+        eyebrow="Inbox"
+        eyebrowIcon={<MessageCircle className="size-3.5" aria-hidden />}
+        title="Messages"
+        description="Your recruiter conversations, all in one place."
+      />
 
-      <div className="flex flex-col gap-4 md:flex-row md:items-stretch">
+      <div className="flex h-[calc(100vh-13rem)] min-h-[520px] flex-col gap-4 md:flex-row md:items-stretch">
         <div
-          className={`md:w-[320px] md:shrink-0 ${mobilePanel === 'chat' ? 'hidden md:flex md:flex-col' : 'flex flex-col'}`}
+          className={`md:w-[330px] md:shrink-0 ${
+            mobilePanel === 'chat' ? 'hidden md:flex md:flex-col' : 'flex min-h-0 flex-1 flex-col md:flex-none'
+          }`}
         >
           <ConversationList
             conversations={conversations}

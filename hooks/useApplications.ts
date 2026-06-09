@@ -53,7 +53,8 @@ export function useApplications(candidateProfileId: string | undefined) {
       setError(qErr.message)
       setApplications([])
     } else {
-      setApplications((data ?? []) as ApplicationWithJob[])
+      // Supabase types embedded to-one relations as arrays; at runtime they're objects.
+      setApplications((data ?? []) as unknown as ApplicationWithJob[])
     }
     setLoading(false)
   }, [candidateProfileId])

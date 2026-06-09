@@ -64,7 +64,13 @@ export async function GET(req: NextRequest) {
     pendingRaw === 'candidate' || pendingRaw === 'company' ? pendingRaw : null
 
   if (validPending) {
-    await supabase.from('profiles').update({ role: validPending }).eq('id', userId)
+    // Only set the role if the account doesn't already have one — never overwrite an
+    // existing role, or a single email can end up as both candidate and company.
+    await supabase
+      .from('profiles')
+      .update({ role: validPending })
+      .eq('id', userId)
+      .is('role', null)
   }
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle()

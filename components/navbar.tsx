@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ChevronDown, X, ArrowRight, Menu } from "lucide-react";
@@ -22,7 +23,9 @@ export function Navbar() {
   // Lock body scroll when mobile menu is open
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [mobileOpen]);
 
   // Close stale menus on resize
@@ -44,18 +47,36 @@ export function Navbar() {
       label: "How it works",
       id: "how-it-works",
       cards: [
-        { title: "For Candidates", links: ["Create profile", "AI matching", "Swipe & apply"] },
-        { title: "For Companies", links: ["Post jobs", "Review matches", "Hire fast"] },
-        { title: "College Partners", links: ["Join as college", "Student lots", "TPO portal"] },
+        {
+          title: "For Candidates",
+          links: ["Create profile", "AI matching", "Swipe & apply"],
+        },
+        {
+          title: "For Companies",
+          links: ["Post jobs", "Review matches", "Hire fast"],
+        },
+        {
+          title: "College Partners",
+          links: ["Join as college", "Student lots", "TPO portal"],
+        },
       ],
     },
     {
       label: "Features",
       id: "features",
       cards: [
-        { title: "Matching", links: ["AI-powered", "Swipe feed", "Skill tagging"] },
-        { title: "Communication", links: ["Direct messaging", "WhatsApp alerts", "Notifications"] },
-        { title: "Platform", links: ["Course recs", "Freelance work", "Analytics"] },
+        {
+          title: "Matching",
+          links: ["AI-powered", "Swipe feed", "Skill tagging"],
+        },
+        {
+          title: "Communication",
+          links: ["Direct messaging", "WhatsApp alerts", "Notifications"],
+        },
+        {
+          title: "Platform",
+          links: ["Course recs", "Freelance work", "Analytics"],
+        },
       ],
     },
   ];
@@ -67,17 +88,20 @@ export function Navbar() {
           Inner div: flex + justify-between so logo always left, CTAs always right, no gaps that push content wide.
           Desktop links: absolutely centred so they don't participate in the flex flow at all.
       */}
-      <nav className="glass-navbar fixed top-0 z-50 h-14 w-full overflow-x-hidden">
+      <nav className="glass-navbar fixed top-0 z-50 h-40 w-full overflow-x-hidden">
         <div className="relative flex h-full w-full items-center justify-between px-4 sm:px-8">
-
           {/* Logo — always visible */}
           <Link
             href="/"
             className="flex shrink-0 items-center rounded-lg outline-offset-4 transition-opacity hover:opacity-90"
           >
-            <span className={`${poppins.className} text-sm font-semibold tracking-tight text-black`}>
-              work mode on
-            </span>
+            <Image
+              src="/Logoo.svg"
+              alt="Work Mode On logo"
+              width={220}
+              height={64}
+              className="h-[64px] w-auto"
+            />
           </Link>
 
           {/* Desktop nav links — absolutely centred, hidden on mobile */}
@@ -90,13 +114,18 @@ export function Navbar() {
                   type="button"
                   aria-expanded={active}
                   onClick={() => setExpanded(active ? null : item.id)}
-                  className={`flex min-h-[44px] cursor-pointer items-center gap-1 rounded-lg px-2 text-sm font-medium outline-offset-2 transition-colors ${
-                    active ? "text-[#4338CA]" : "text-black hover:text-[#0f172a]"
+                  className={`flex min-h-[52px] cursor-pointer items-center gap-2 rounded-lg px-4 text-base font-semibold outline-offset-2 transition-colors ${
+                    active
+                      ? "text-[#4338CA]"
+                      : "text-black hover:text-[#0f172a]"
                   }`}
                   whileTap={reduceMotion ? undefined : { scale: 0.97 }}
                 >
                   {item.label}
-                  <motion.span animate={{ rotate: active ? 180 : 0 }} transition={springSnappy}>
+                  <motion.span
+                    animate={{ rotate: active ? 180 : 0 }}
+                    transition={springSnappy}
+                  >
                     <ChevronDown className="h-4 w-4 opacity-70" aria-hidden />
                   </motion.span>
                 </motion.button>
@@ -104,7 +133,7 @@ export function Navbar() {
             })}
             <button
               type="button"
-              className="min-h-[44px] rounded-lg px-2 text-sm font-medium text-black transition-colors hover:text-[#0f172a]"
+              className="min-h-[52px] rounded-lg px-4 text-base font-semibold text-black transition-colors hover:text-[#0f172a]"
             >
               Pricing
             </button>
@@ -114,7 +143,7 @@ export function Navbar() {
           <div className="hidden shrink-0 items-center gap-3 md:flex">
             <Link
               href="/auth/login"
-              className="inline-flex min-h-[44px] items-center px-3 text-sm font-medium text-black transition-colors hover:text-[#0f172a]"
+              className="inline-flex min-h-[52px] items-center px-4 text-base font-semibold text-black transition-colors hover:text-[#0f172a]"
             >
               Sign in
             </Link>
@@ -124,10 +153,10 @@ export function Navbar() {
             >
               <Link
                 href="/auth/signup"
-                className="flex min-h-[40px] items-center gap-2 rounded-full bg-gradient-to-r from-[#0f172a] to-[#1e293b] px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-black/20"
+                className="flex min-h-[52px] items-center gap-3 rounded-full bg-gradient-to-r from-[#0f172a] to-[#1e293b] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-black/20"
               >
                 Get started
-                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+                <ArrowRight className="h-5 w-5 shrink-0" aria-hidden />
               </Link>
             </motion.div>
           </div>
@@ -136,7 +165,7 @@ export function Navbar() {
           <div className="flex shrink-0 items-center gap-2 md:hidden">
             <Link
               href="/auth/signup"
-              className="flex h-9 items-center rounded-full bg-gradient-to-r from-[#0f172a] to-[#1e293b] px-4 text-xs font-semibold text-white shadow-md"
+              className="flex h-12 items-center rounded-full bg-gradient-to-r from-[#0f172a] to-[#1e293b] px-5 text-base font-semibold text-white shadow-md"
             >
               Get started
             </Link>
@@ -145,7 +174,7 @@ export function Navbar() {
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen((o) => !o)}
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-black transition-colors hover:bg-black/5"
+              className="flex h-12 w-12 items-center justify-center rounded-lg text-black transition-colors hover:bg-black/5"
             >
               <AnimatePresence mode="wait" initial={false}>
                 {mobileOpen ? (
@@ -172,7 +201,6 @@ export function Navbar() {
               </AnimatePresence>
             </button>
           </div>
-
         </div>
       </nav>
 
@@ -184,28 +212,26 @@ export function Navbar() {
             animate={{ height: "auto", opacity: 1 }}
             exit={reduceMotion ? undefined : { height: 0, opacity: 0 }}
             transition={{ duration: 0.32, ease: [0.25, 0.1, 0.25, 1] }}
-            className="fixed top-14 z-40 hidden w-full overflow-hidden border-b border-white/10 bg-[#0a0a0a] dot-grid-dark md:block"
+            className="fixed top-40 z-40 hidden w-full overflow-hidden border-b border-white/10 bg-[#0a0a0a] dot-grid-dark md:block"
           >
             <div className="mx-auto max-w-7xl px-8 py-12">
               <div className="mb-8 flex items-center justify-between gap-4">
                 <button
                   type="button"
                   onClick={() => setExpanded(null)}
-                  className="flex h-11 w-11 items-center justify-center rounded-lg text-white/60 transition-colors hover:bg-white/5 hover:text-white"
+                  className="flex h-12 w-12 items-center justify-center rounded-lg text-white/60 transition-colors hover:bg-white/5 hover:text-white"
                   aria-label="Close menu"
                 >
                   <X className="h-6 w-6" />
                 </button>
-                <span className={`${poppins.className} text-sm font-semibold tracking-tight text-white`}>
-                  work mode on
-                </span>
+
                 <Link
                   href="/auth/signup"
-                  className="flex items-center gap-2 rounded-full bg-[#4F46E5] px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-black/40 transition-colors hover:bg-[#4338CA]"
+                  className="flex items-center gap-3 rounded-full bg-[#4F46E5] px-6 py-3 text-base font-semibold text-white shadow-lg shadow-black/40 transition-colors hover:bg-[#4338CA]"
                   onClick={() => setExpanded(null)}
                 >
                   Get started
-                  <ArrowRight className="h-4 w-4" aria-hidden />
+                  <ArrowRight className="h-5 w-5" aria-hidden />
                 </Link>
               </div>
 
@@ -221,19 +247,31 @@ export function Navbar() {
                       whileHover={
                         reduceMotion
                           ? undefined
-                          : { y: -3, transition: { type: "spring", stiffness: 400, damping: 25 } }
+                          : {
+                              y: -3,
+                              transition: {
+                                type: "spring",
+                                stiffness: 400,
+                                damping: 25,
+                              },
+                            }
                       }
                       className="flex min-h-[200px] flex-col rounded-2xl border border-white/[0.1] bg-gradient-to-br from-white/[0.08] to-white/[0.02] p-5 shadow-xl shadow-black/30 backdrop-blur-sm"
                     >
-                      <h3 className="mb-6 text-base font-semibold text-white">{card.title}</h3>
+                      <h3 className="mb-6 text-lg font-semibold text-white">
+                        {card.title}
+                      </h3>
                       <div className="mt-auto flex flex-col gap-3">
                         {card.links.map((link, linkIdx) => (
                           <a
                             key={linkIdx}
                             href="#"
-                            className="group flex cursor-pointer items-center gap-2 text-sm text-white/55 transition-colors hover:text-white"
+                            className="group flex cursor-pointer items-center gap-3 text-base text-white/55 transition-colors hover:text-white"
                           >
-                            <span className="text-white/30 transition-colors group-hover:text-[#818CF8]" aria-hidden>
+                            <span
+                              className="text-white/30 transition-colors group-hover:text-[#818CF8]"
+                              aria-hidden
+                            >
                               ↗
                             </span>
                             {link}
@@ -274,17 +312,14 @@ export function Navbar() {
               className="fixed right-0 top-0 z-50 flex h-full w-4/5 max-w-xs flex-col bg-[#0a0a0a] shadow-2xl md:hidden"
             >
               {/* Drawer header */}
-              <div className="flex h-14 shrink-0 items-center justify-between border-b border-white/10 px-5">
-                <span className={`${poppins.className} text-sm font-semibold tracking-tight text-white`}>
-                  work mode on
-                </span>
+              <div className="flex h-24 shrink-0 items-center justify-between border-b border-white/10 px-5">
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
                   aria-label="Close menu"
-                  className="flex h-10 w-10 items-center justify-center rounded-lg text-white/60 transition-colors hover:bg-white/5 hover:text-white"
+                  className="flex h-12 w-12 items-center justify-center rounded-lg text-white/60 transition-colors hover:bg-white/5 hover:text-white"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-6 w-6" />
                 </button>
               </div>
 
@@ -298,12 +333,20 @@ export function Navbar() {
                         <button
                           type="button"
                           aria-expanded={open}
-                          onClick={() => setMobileExpanded(open ? null : item.id)}
-                          className="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-medium text-white/80 transition-colors hover:bg-white/5 hover:text-white"
+                          onClick={() =>
+                            setMobileExpanded(open ? null : item.id)
+                          }
+                          className="flex w-full items-center justify-between rounded-xl px-4 py-4 text-left text-base font-semibold text-white/80 transition-colors hover:bg-white/5 hover:text-white"
                         >
                           {item.label}
-                          <motion.span animate={{ rotate: open ? 180 : 0 }} transition={springSnappy}>
-                            <ChevronDown className="h-4 w-4 opacity-60" aria-hidden />
+                          <motion.span
+                            animate={{ rotate: open ? 180 : 0 }}
+                            transition={springSnappy}
+                          >
+                            <ChevronDown
+                              className="h-4 w-4 opacity-60"
+                              aria-hidden
+                            />
                           </motion.span>
                         </button>
 
@@ -313,7 +356,10 @@ export function Navbar() {
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: "auto", opacity: 1 }}
                               exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+                              transition={{
+                                duration: 0.25,
+                                ease: [0.25, 0.1, 0.25, 1],
+                              }}
                               className="overflow-hidden"
                             >
                               <div className="flex flex-col gap-3 px-2 pb-3 pt-2">
@@ -322,7 +368,7 @@ export function Navbar() {
                                     key={card.title}
                                     className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-4"
                                   >
-                                    <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/40">
+                                    <p className="mb-3 text-base font-semibold uppercase tracking-wider text-white/40">
                                       {card.title}
                                     </p>
                                     <div className="flex flex-col gap-2">
@@ -330,7 +376,7 @@ export function Navbar() {
                                         <a
                                           key={i}
                                           href="#"
-                                          className="group flex items-center gap-2 text-sm text-white/60 transition-colors hover:text-white"
+                                          className="group flex items-center gap-3 text-base text-white/60 transition-colors hover:text-white"
                                           onClick={() => setMobileOpen(false)}
                                         >
                                           <span
@@ -355,7 +401,7 @@ export function Navbar() {
 
                   <button
                     type="button"
-                    className="flex w-full items-center rounded-xl px-3 py-3 text-left text-sm font-medium text-white/80 transition-colors hover:bg-white/5 hover:text-white"
+                    className="flex w-full items-center rounded-xl px-4 py-4 text-left text-base font-semibold text-white/80 transition-colors hover:bg-white/5 hover:text-white"
                   >
                     Pricing
                   </button>
@@ -367,14 +413,14 @@ export function Navbar() {
                   <Link
                     href="/auth/login"
                     onClick={() => setMobileOpen(false)}
-                    className="flex min-h-[48px] items-center justify-center rounded-xl border border-white/10 text-sm font-medium text-white/70 transition-colors hover:border-white/20 hover:text-white"
+                    className="flex min-h-[52px] items-center justify-center rounded-xl border border-white/10 text-base font-semibold text-white/70 transition-colors hover:border-white/20 hover:text-white"
                   >
                     Sign in
                   </Link>
                   <Link
                     href="/auth/signup"
                     onClick={() => setMobileOpen(false)}
-                    className="flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-[#4F46E5] text-sm font-semibold text-white shadow-lg shadow-black/40 transition-colors hover:bg-[#4338CA]"
+                    className="flex min-h-[52px] items-center justify-center gap-3 rounded-xl bg-[#4F46E5] text-base font-semibold text-white shadow-lg shadow-black/40 transition-colors hover:bg-[#4338CA]"
                   >
                     Get started
                     <ArrowRight className="h-4 w-4" aria-hidden />

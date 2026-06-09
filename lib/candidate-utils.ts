@@ -19,11 +19,18 @@ export function formatStipend(min: number | null, max: number | null): string {
 export function normalizeCompany(job: { company_profiles?: unknown }): {
   company_name: string | null
   logo_url: string | null
+  industry: string | null
 } {
+  const fallback = { company_name: null, logo_url: null, industry: null }
   const cp = job.company_profiles
-  if (!cp) return { company_name: null, logo_url: null }
-  if (Array.isArray(cp)) return cp[0] ?? { company_name: null, logo_url: null }
-  return cp as { company_name: string | null; logo_url: string | null }
+  if (!cp) return fallback
+  const obj = (Array.isArray(cp) ? cp[0] : cp) as Record<string, unknown> | undefined
+  if (!obj) return fallback
+  return {
+    company_name: (obj.company_name as string | null) ?? null,
+    logo_url: (obj.logo_url as string | null) ?? null,
+    industry: (obj.industry as string | null) ?? null,
+  }
 }
 
 export function profileCompletionPercent(row: {

@@ -1,12 +1,14 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Building2, ImageIcon, Upload, X } from 'lucide-react'
+import { Briefcase, Building2, ImageIcon, MapPin, Upload, X } from 'lucide-react'
 import { OnboardingFrame } from '@/components/onboarding/OnboardingFrame'
 import { Button } from '@/components/ui/button'
+import { Combobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { CITIES, INDUSTRIES } from '@/lib/onboarding-options'
 import { uploadCompanyLogo } from '@/lib/upload-logo-client'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -174,14 +176,30 @@ export function CompanyOnboarding({ userId }: CompanyOnboardingProps) {
                 <Label htmlFor="industry" className="text-[#475569]">
                   Industry
                 </Label>
-                <Input id="industry" className={fieldClass} value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="SaaS, fintech…" />
+                <Combobox
+                  id="industry"
+                  value={industry}
+                  onChange={setIndustry}
+                  options={INDUSTRIES}
+                  placeholder="SaaS, fintech…"
+                  icon={<Briefcase className="size-4" />}
+                  inputClassName={fieldClass}
+                />
                 {errors.industry && <p className="text-sm text-red-600">{errors.industry}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="city" className="text-[#475569]">
                   City / HQ
                 </Label>
-                <Input id="city" className={fieldClass} value={city} onChange={(e) => setCity(e.target.value)} />
+                <Combobox
+                  id="city"
+                  value={city}
+                  onChange={setCity}
+                  options={CITIES}
+                  placeholder="Head office city"
+                  icon={<MapPin className="size-4" />}
+                  inputClassName={fieldClass}
+                />
                 {errors.city && <p className="text-sm text-red-600">{errors.city}</p>}
               </div>
             </div>

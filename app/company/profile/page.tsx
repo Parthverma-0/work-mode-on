@@ -1,11 +1,12 @@
 'use client'
 
-import { Upload } from 'lucide-react'
+import { Briefcase, MapPin, Upload } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Combobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -13,17 +14,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/context/AuthContext'
 import { useCompany } from '@/hooks/useCompany'
 import { uploadCompanyLogo } from '@/lib/upload-logo-client'
+import { CITIES, INDUSTRIES } from '@/lib/onboarding-options'
 import { supabase } from '@/lib/supabase'
-
-const INDUSTRIES = [
-  'Technology',
-  'Finance',
-  'Healthcare',
-  'Education',
-  'E-commerce',
-  'Media',
-  'Other',
-]
 
 export default function CompanyProfilePage() {
   const { user } = useAuth()
@@ -200,28 +192,27 @@ export default function CompanyProfilePage() {
 
           <div className="space-y-2">
             <Label htmlFor="industry">Industry</Label>
-            <Input
+            <Combobox
               id="industry"
-              list="industry-options"
               value={industry}
-              onChange={(e) => setIndustry(e.target.value)}
-              className="rounded-lg border-gray-200"
-              placeholder="e.g. Technology"
+              onChange={setIndustry}
+              options={INDUSTRIES}
+              placeholder="e.g. SaaS"
+              icon={<Briefcase className="size-4" />}
+              inputClassName="rounded-lg border-gray-200"
             />
-            <datalist id="industry-options">
-              {INDUSTRIES.map((i) => (
-                <option key={i} value={i} />
-              ))}
-            </datalist>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="city">City</Label>
-            <Input
+            <Combobox
               id="city"
               value={city}
-              onChange={(e) => setCity(e.target.value)}
-              className="rounded-lg border-gray-200"
+              onChange={setCity}
+              options={CITIES}
+              placeholder="Head office city"
+              icon={<MapPin className="size-4" />}
+              inputClassName="rounded-lg border-gray-200"
             />
           </div>
 

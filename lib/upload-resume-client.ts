@@ -1,31 +1,13 @@
 import { supabase } from '@/lib/supabase'
 
 const UPLOAD_TIMEOUT_MS = 60_000
-const SIGNED_URL_TIMEOUT_MS = 20_000
-
-function withTimeout<T>(
-  promise: Promise<T>,
-  ms: number,
-  rejectWith: () => Error,
-): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const t = setTimeout(() => reject(rejectWith()), ms)
-    promise.then(
-      (v) => {
-        clearTimeout(t)
-        resolve(v)
-      },
-      (e) => {
-        clearTimeout(t)
-        reject(e)
-      },
-    )
-  })
-}
 
 /**
  * Uploads a resume via the Storage REST API (bounded by fetch AbortSignal).
  * Avoids hanging promises seen with some `@supabase/supabase-js` storage uploads in browsers.
+ *
+ * Returns the storage PATH (e.g. `userId/123.pdf`), not a signed URL — viewers
+ * sign it on demand via `resolveResumeDownloadUrl`, so links never expire.
  */
 export async function uploadCandidateResumeBlob(file: File, userId: string): Promise<string> {
   const rawExt = file.name.split('.').pop()?.toLowerCase() || 'pdf'
@@ -84,23 +66,5 @@ export async function uploadCandidateResumeBlob(file: File, userId: string): Pro
     )
   }
 
-  const signedPromise = supabase.storage.from('resumes').createSignedUrl(path, 60 * 60 * 24 * 365)
-
-  const { data: signedData, error: signedError } = await withTimeout(
-    signedPromise,
-    SIGNED_URL_TIMEOUT_MS,
-    () =>
-      new Error(
-        `Signed link timed out after ${SIGNED_URL_TIMEOUT_MS / 1000}s. Ask your admin to enable SELECT on bucket "resumes" for authenticated users.`,
-      ),
-  )
-
-  if (signedError || !signedData?.signedUrl) {
-    throw new Error(
-      signedError?.message ??
-        'Upload finished but could not create a viewing link — check Storage SELECT policy.',
-    )
-  }
-
-  return signedData.signedUrl
+  return path
 }

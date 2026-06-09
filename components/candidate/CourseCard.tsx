@@ -27,8 +27,8 @@ export function CourseCard({ course, featured, onSkillClick }: CourseCardProps) 
   return (
     <article
       className={cn(
-        'flex h-full flex-col rounded-xl border bg-white p-5 shadow-sm transition-shadow hover:shadow-md',
-        featured ? 'border-[#4F46E5]/30 ring-1 ring-[#4F46E5]/10' : 'border-gray-100',
+        'flex h-full flex-col lift rounded-2xl border bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_30px_rgba(15,23,42,0.05)]',
+        featured ? 'border-[#4F46E5]/30 ring-1 ring-[#4F46E5]/10' : 'border-black/[0.06]',
       )}
     >
       <div className="flex flex-wrap items-center gap-2">

@@ -87,7 +87,8 @@ export function useApplicants(companyJobIds: string[]) {
       return
     }
 
-    const raw = (data ?? []) as ApplicationWithDetails[]
+    // Supabase types embedded to-one relations as arrays; at runtime they're objects.
+    const raw = (data ?? []) as unknown as ApplicationWithDetails[]
     const merged = await attachProfiles(raw)
     setApplications(merged)
     setLoading(false)

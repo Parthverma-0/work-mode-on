@@ -41,8 +41,8 @@ export function JobCard({
         }
       }}
       className={cn(
-        'group cursor-pointer rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-all',
-        'hover:border-[#4F46E5]/25 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4F46E5]',
+        'group lift cursor-pointer rounded-2xl border border-black/[0.06] bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_30px_rgba(15,23,42,0.05)]',
+        'hover:border-[#4F46E5]/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4F46E5]',
       )}
     >
       <div className="flex gap-4">

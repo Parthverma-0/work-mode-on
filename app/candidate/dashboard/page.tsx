@@ -1,29 +1,47 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion, useReducedMotion } from 'framer-motion'
-import { BookOpen, Handshake, Rocket } from 'lucide-react'
+import {
+  ArrowRight,
+  BookOpen,
+  ClipboardList,
+  Flame,
+  MessageCircle,
+  Rocket,
+  Search,
+} from 'lucide-react'
 import { JobCard } from '@/components/candidate/JobCard'
 import { JobDetailDrawer } from '@/components/candidate/JobDetailDrawer'
 import { ApplyModal } from '@/components/candidate/ApplyModal'
 import { CourseCard } from '@/components/candidate/CourseCard'
-import { ProfileCompletionBar } from '@/components/candidate/ProfileCompletionBar'
 import { StatCard } from '@/components/candidate/StatCard'
 import { DashboardSection } from '@/components/dashboard/DashboardSection'
+import { MatchModal } from '@/components/swipe/MatchModal'
 import { PageEnter } from '@/components/motion/PageEnter'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/context/AuthContext'
 import { useCandidate } from '@/hooks/useCandidate'
 import { useApplications } from '@/hooks/useApplications'
+import { useMatchAlerts } from '@/hooks/useMatchAlerts'
 import { supabase } from '@/lib/supabase'
 import type { CourseRow, JobWithCompany } from '@/lib/candidate-types'
-import { profileCompletionPercent } from '@/lib/candidate-utils'
+import { normalizeCompany, profileCompletionPercent } from '@/lib/candidate-utils'
+import { cn } from '@/lib/utils'
+
+function initials(name: string) {
+  const p = name.trim().split(/\s+/).filter(Boolean)
+  if (!p.length) return 'WMO'
+  return ((p[0][0] ?? '') + (p[1]?.[0] ?? '')).toUpperCase()
+}
 
 function EmptyInsight({ icon: Icon, title, body }: { icon: typeof Rocket; title: string; body: string }) {
   return (
-    <div className="glass-panel rounded-2xl border border-dashed border-black/[0.08] px-8 py-14 text-center ring-1 ring-black/[0.03]">
+    <div className="glass-panel rounded-2xl border border-dashed border-black/[0.08] px-8 py-14 text-center">
       <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-[#eef2ff] text-[#4338CA] shadow-inner ring-1 ring-[#4F46E5]/15">
         <Icon className="size-7" strokeWidth={1.75} aria-hidden />
       </div>
@@ -33,11 +51,61 @@ function EmptyInsight({ icon: Icon, title, body }: { icon: typeof Rocket; title:
   )
 }
 
+function QuickAction({
+  href,
+  icon: Icon,
+  label,
+  sub,
+  accent,
+}: {
+  href: string
+  icon: typeof Rocket
+  label: string
+  sub: string
+  accent?: boolean
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        'lift group flex items-center gap-3 rounded-2xl p-4',
+        accent
+          ? 'bg-gradient-to-br from-[#4F46E5] to-[#6366f1] text-white shadow-[0_8px_24px_rgba(79,70,229,0.28)]'
+          : 'border border-black/[0.06] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_rgba(15,23,42,0.05)]',
+      )}
+    >
+      <div
+        className={cn(
+          'flex size-11 shrink-0 items-center justify-center rounded-xl',
+          accent ? 'bg-white/20 text-white' : 'bg-[#EEF2FF] text-[#4338CA]',
+        )}
+      >
+        <Icon className="size-5" aria-hidden />
+      </div>
+      <div className="min-w-0">
+        <p className={cn('text-sm font-semibold', accent ? 'text-white' : 'text-[#0f172a]')}>{label}</p>
+        <p className={cn('truncate text-xs', accent ? 'text-white/80' : 'text-[#64748b]')}>{sub}</p>
+      </div>
+      <ArrowRight
+        className={cn(
+          'ml-auto size-4 shrink-0 transition-transform group-hover:translate-x-0.5',
+          accent ? 'text-white/90' : 'text-[#94a3b8]',
+        )}
+        aria-hidden
+      />
+    </Link>
+  )
+}
+
 export default function CandidateDashboardPage() {
   const { user, profile } = useAuth()
+  const router = useRouter()
   const reduceMotion = useReducedMotion()
   const { candidate, loading: candLoading } = useCandidate(user?.id)
   const { applications, loading: appsLoading, refresh: refreshApps } = useApplications(candidate?.id)
+  const { pending: pendingMatches, acknowledge: acknowledgeMatch } = useMatchAlerts(user?.id, applications)
+  const match = pendingMatches[0] ?? null
+  const matchCompany = match?.jobs ? normalizeCompany(match.jobs) : null
 
   const [recentJobs, setRecentJobs] = useState<JobWithCompany[]>([])
   const [jobsLoading, setJobsLoading] = useState(true)
@@ -65,18 +133,8 @@ export default function CandidateDashboardPage() {
         .from('jobs')
         .select(
           `
-          id,
-          company_id,
-          title,
-          type,
-          description,
-          skills_required,
-          location,
-          mode,
-          stipend_min,
-          stipend_max,
-          is_active,
-          posted_at,
+          id, company_id, title, type, description, skills_required, location,
+          mode, stipend_min, stipend_max, is_active, posted_at,
           company_profiles ( company_name, logo_url )
         `,
         )
@@ -128,91 +186,106 @@ export default function CandidateDashboardPage() {
   }
 
   const shortlisted = applications.filter((a) => a.status === 'shortlisted').length
-  const completion = candidate ? profileCompletionPercent(candidate) : candLoading ? 0 : 0
-
-  const subtitle = candidate?.open_to_work
-    ? "You're visible to hiring teams — keep your headline and skills current so recruiters reach out."
-    : 'Toggle Open to Work in your profile to surface in recruiter search and inbound messages.'
+  const completion = candidate ? profileCompletionPercent(candidate) : 0
+  const avatar = profile?.avatar_url ?? null
 
   return (
-    <PageEnter className="space-y-12 pb-4">
-      <section className="relative overflow-hidden rounded-3xl ring-1 ring-black/[0.05]">
-        <div className="mesh-app-bg absolute inset-0 rounded-3xl" aria-hidden />
-        <div className="dot-grid-subtle absolute inset-0 rounded-3xl opacity-70" aria-hidden />
+    <PageEnter className="space-y-8 pb-4">
+      {/* Welcome banner */}
+      <section className="glass-panel relative overflow-hidden rounded-3xl p-6 sm:p-8">
+        <div className="dot-grid-subtle pointer-events-none absolute inset-0 rounded-3xl opacity-60" aria-hidden />
         {!reduceMotion && (
-          <>
-            <motion.div
-              className="absolute -left-24 top-1/2 h-56 w-56 -translate-y-1/2 rounded-full bg-[#4F46E5]/15 blur-[100px]"
-              aria-hidden
-              animate={{ opacity: [0.4, 0.65, 0.4], scale: [1, 1.05, 1] }}
-              transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
-            />
-            <motion.div
-              className="absolute -right-16 bottom-0 h-40 w-40 rounded-full bg-[#818CF8]/20 blur-[72px]"
-              aria-hidden
-              animate={{ opacity: [0.35, 0.55, 0.35] }}
-              transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
-            />
-          </>
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute -right-16 -top-20 h-60 w-60 rounded-full bg-[#4F46E5]/12 blur-[90px]"
+            animate={{ opacity: [0.4, 0.7, 0.4], scale: [1, 1.06, 1] }}
+            transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
+          />
         )}
 
-        <div className="relative flex flex-col gap-8 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-10">
-          <div className="max-w-2xl space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#4338CA] shadow-sm backdrop-blur-sm">
-              <Rocket className="size-3.5" aria-hidden strokeWidth={2.5} /> Candidate workspace
+        <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="relative size-16 shrink-0 overflow-hidden rounded-2xl bg-[#EEF2FF] shadow-md ring-4 ring-white">
+              {avatar ? (
+                <Image src={avatar} alt="" fill className="object-cover" unoptimized />
+              ) : (
+                <div className="flex size-full items-center justify-center text-lg font-bold text-[#4338CA]">
+                  {initials(profile?.full_name ?? firstName)}
+                </div>
+              )}
             </div>
-            <h1 className="text-[1.75rem] font-semibold tracking-tight text-[#0f172a] sm:text-4xl">
-              Hey {firstName},{' '}
-              <span className="gradient-text-indigo">let&apos;s find your edge</span>
-            </h1>
-            <p className="text-[15px] leading-relaxed text-[#475569] sm:text-base">{subtitle}</p>
-            <div className="flex flex-wrap gap-3 pt-1">
-              <Button size="lg" className="rounded-xl bg-[#4F46E5] px-6 font-semibold shadow-lg shadow-[#4F46E5]/22 hover:bg-[#4338CA]" asChild>
-                <Link href="/candidate/profile">Finish profile details</Link>
-              </Button>
-              <Button size="lg" variant="outline" className="rounded-xl border-[#e2e8f0] bg-white/85 backdrop-blur-sm" asChild>
-                <Link href="/candidate/jobs">Browse all jobs</Link>
-              </Button>
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#4338CA] shadow-sm backdrop-blur-sm">
+                <Rocket className="size-3.5" strokeWidth={2.5} aria-hidden /> Candidate workspace
+              </div>
+              <h1 className="mt-3 text-[1.75rem] font-semibold tracking-tight text-[#0f172a] sm:text-4xl">
+                Hey {firstName}, <span className="gradient-text-indigo">let&apos;s find your edge</span>
+              </h1>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Button className="rounded-xl px-5 font-semibold" asChild>
+                  <Link href="/candidate/swipe">
+                    <Flame className="mr-1.5 size-4" aria-hidden /> Start swiping
+                  </Link>
+                </Button>
+                <Button variant="outline" className="rounded-xl bg-white/85 backdrop-blur-sm" asChild>
+                  <Link href="/candidate/jobs">Browse all jobs</Link>
+                </Button>
+              </div>
             </div>
           </div>
-          <motion.div
-            className="glass-panel relative flex shrink-0 flex-col gap-4 rounded-2xl px-8 py-7 shadow-lg ring-1 ring-white/80 sm:w-[min(100%,340px)]"
-            initial={reduceMotion ? false : { opacity: 0, scale: 0.97, y: 12 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 280, damping: 28 }}
+
+          {/* Profile strength */}
+          <Link
+            href="/candidate/profile"
+            className="lift w-full shrink-0 rounded-2xl bg-white/70 p-5 ring-1 ring-black/[0.05] md:w-56"
           >
-            <div className="flex items-start gap-3">
-              <div className="flex size-11 items-center justify-center rounded-xl bg-[#eef2ff] text-[#4338CA]">
-                <Handshake className="size-6" strokeWidth={2} aria-hidden />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-[#0f172a]">Momentum tips</p>
-                <ul className="mt-3 space-y-2.5 text-sm text-[#64748b]">
-                  <li>• Refresh skills after every sprint or internship.</li>
-                  <li>• Tailor your headline to the roles you dream about.</li>
-                  <li>• Résumé uploads unlock richer applicant threads.</li>
-                </ul>
-              </div>
+            <div className="flex items-baseline justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#64748b]">
+                Profile strength
+              </span>
+              <span className="text-2xl font-bold tabular-nums text-[#4338CA]">{completion}%</span>
             </div>
-          </motion.div>
+            <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-[#EEF2FF]">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-[#4F46E5] to-[#6366f1] transition-[width] duration-500"
+                style={{ width: `${completion}%` }}
+              />
+            </div>
+            <p className="mt-2.5 inline-flex items-center gap-1 text-xs font-medium text-[#4338CA]">
+              Complete your profile <ArrowRight className="size-3.5" aria-hidden />
+            </p>
+          </Link>
         </div>
       </section>
 
-      <ProfileCompletionBar percent={completion} />
-
-      <section className="grid gap-4 sm:grid-cols-3">
-        <StatCard
-          title="Jobs applied"
-          value={appsLoading ? '—' : applications.length}
-          loading={appsLoading}
+      {/* Quick actions */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <QuickAction href="/candidate/swipe" icon={Flame} label="Discover" sub="Swipe to apply" accent />
+        <QuickAction href="/candidate/jobs" icon={Search} label="Browse jobs" sub="Search all roles" />
+        <QuickAction
+          href="/candidate/applications"
+          icon={ClipboardList}
+          label="Applications"
+          sub={`${applications.length} submitted`}
         />
-        <StatCard title="Profile views" value="—" loading={false} />
+        <QuickAction href="/candidate/messages" icon={MessageCircle} label="Messages" sub="Recruiter chats" />
+      </div>
+
+      {/* Stats */}
+      <section className="grid gap-4 sm:grid-cols-3">
+        <StatCard title="Jobs applied" value={appsLoading ? '—' : applications.length} loading={appsLoading} />
         <StatCard title="Shortlisted" value={appsLoading ? '—' : shortlisted} loading={appsLoading} />
+        <StatCard title="Profile strength" value={candLoading ? '—' : `${completion}%`} loading={candLoading} />
       </section>
 
       <DashboardSection
         title="Recent jobs"
         description="Live roles from teams hiring through Work Mode — tap a card to read the full brief."
+        action={
+          <Button variant="ghost" size="sm" className="rounded-lg text-[#4338CA] hover:bg-[#eef2ff]" asChild>
+            <Link href="/candidate/jobs">View all</Link>
+          </Button>
+        }
       >
         <div className="grid gap-4 md:grid-cols-2">
           {jobsLoading
@@ -279,6 +352,28 @@ export default function CandidateDashboardPage() {
           candidateProfileId={candidate.id}
           userId={user.id}
           onApplied={() => refreshApps()}
+        />
+      )}
+
+      {match && (
+        <MatchModal
+          open
+          onOpenChange={(open) => {
+            if (!open) acknowledgeMatch(match.id)
+          }}
+          subtitle={`${matchCompany?.company_name ?? 'A company'} shortlisted you${
+            match.jobs?.title ? ` for ${match.jobs.title}` : ''
+          }. The recruiter can now reach you directly!`}
+          leftName={profile?.full_name ?? 'You'}
+          leftAvatar={profile?.avatar_url}
+          rightName={matchCompany?.company_name ?? 'Company'}
+          rightAvatar={matchCompany?.logo_url}
+          primaryLabel="View application"
+          onPrimary={() => {
+            acknowledgeMatch(match.id)
+            router.push('/candidate/applications')
+          }}
+          secondaryLabel="Nice!"
         />
       )}
     </PageEnter>

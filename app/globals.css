@@ -17,6 +17,27 @@
   --border-light: rgba(0, 0, 0, 0.06);
   --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
   --wmo-glow: 0 0 80px rgba(79, 70, 229, 0.12);
+
+  /* Soft-depth elevation system (premium feel: layered, low-opacity shadows) */
+  --elev-1: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.04);
+  --elev-2: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 30px rgba(15, 23, 42, 0.06);
+  --elev-3: 0 2px 4px rgba(15, 23, 42, 0.05), 0 20px 48px rgba(15, 23, 42, 0.1);
+  --hairline: 0 0 0 1px rgba(15, 23, 42, 0.05);
+
+  /* shadcn semantic tokens (light theme, indigo brand) — these were missing,
+     which made text-primary-foreground / accent / popover / muted-foreground etc.
+     fall back to dark inherited text. */
+  --primary-foreground: #ffffff;
+  --secondary-foreground: #ffffff;
+  --accent: #eef2ff;
+  --accent-foreground: #4338ca;
+  --muted-foreground: #6b7280;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --input: rgba(15, 23, 42, 0.12);
+  --ring: #4f46e5;
 }
 
 
@@ -27,12 +48,28 @@
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --color-border: var(--border);
 }
 
 @layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--border);
+  }
   body {
     @apply bg-background text-foreground;
   }
@@ -83,6 +120,57 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Soft-depth surfaces & interactions ----------------------------------- */
+
+/* Gentle lift on hover for interactive cards (job/course/candidate cards). */
+.lift {
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (hover: hover) {
+  .lift:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--elev-3);
+  }
+}
+
+/* Layered glass for elevated, premium surfaces with a hover-deepen variant. */
+.glass-elevated {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    var(--elev-2),
+    var(--wmo-glow);
+}
+
+/* Subtle sheen sweep used on hero / premium CTAs. */
+.sheen {
+  position: relative;
+  overflow: hidden;
+}
+.sheen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.35) 48%,
+    transparent 62%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.8s ease;
+}
+@media (hover: hover) {
+  .sheen:hover::after {
+    transform: translateX(120%);
+  }
 }
 
 .gradient-text-indigo {

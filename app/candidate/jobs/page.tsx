@@ -1,13 +1,13 @@
 'use client'
 
-import { Search } from 'lucide-react'
+import { Briefcase, Search, SlidersHorizontal } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { ApplyModal } from '@/components/candidate/ApplyModal'
 import { JobCard } from '@/components/candidate/JobCard'
 import { JobDetailDrawer } from '@/components/candidate/JobDetailDrawer'
+import { PageHeader } from '@/components/dashboard/PageHeader'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/AuthContext'
 import { useCandidate } from '@/hooks/useCandidate'
 import { useApplications } from '@/hooks/useApplications'
@@ -29,6 +29,31 @@ const MODE_FILTERS: { label: string; value: JobMode | 'all' }[] = [
   { label: 'Onsite', value: 'onsite' },
   { label: 'Hybrid', value: 'hybrid' },
 ]
+
+function Pill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'min-h-9 rounded-full px-4 text-xs font-semibold transition-all active:scale-[0.97]',
+        active
+          ? 'bg-[#4F46E5] text-white shadow-[0_4px_14px_rgba(79,70,229,0.28)]'
+          : 'border border-black/[0.08] bg-white text-[#475569] hover:border-[#4F46E5]/30 hover:text-[#4338CA]',
+      )}
+    >
+      {children}
+    </button>
+  )
+}
 
 export default function CandidateJobsPage() {
   const { user } = useAuth()
@@ -56,76 +81,66 @@ export default function CandidateJobsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-[#0A0A0A] md:text-3xl">Browse jobs</h1>
-        <p className="mt-1 text-sm text-[#6B7280] md:text-base">
-          Search roles matched to your skills and preferences.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Find work"
+        eyebrowIcon={<Briefcase className="size-3.5" aria-hidden />}
+        title="Browse jobs"
+        description="Search live roles matched to your skills and preferences."
+      />
 
-      <div className="space-y-4 rounded-xl border border-gray-100 bg-[#FAFAFA]/80 p-4 shadow-sm md:p-5">
+      {/* Filter panel */}
+      <div className="glass-panel space-y-5 rounded-2xl p-5">
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#9CA3AF]" />
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#94a3b8]" />
           <Input
             placeholder="Search by title or skill…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="min-h-11 rounded-lg border-gray-200 bg-white pl-10 text-[#0A0A0A] placeholder:text-[#9CA3AF]"
+            className="min-h-12 rounded-xl bg-white/90 pl-10 text-[15px]"
             aria-label="Search jobs"
           />
         </div>
 
-        <div className="space-y-2">
-          <p className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">Type</p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#94a3b8]">
+            <SlidersHorizontal className="size-3.5" aria-hidden />
+            Type
+          </span>
           <div className="flex flex-wrap gap-2">
             {TYPE_FILTERS.map((f) => (
-              <Button
-                key={f.label}
-                type="button"
-                variant={type === f.value ? 'default' : 'outline'}
-                size="sm"
-                className={cn(
-                  'min-h-9 rounded-full px-4 text-xs font-medium',
-                  type === f.value
-                    ? 'bg-[#4F46E5] hover:bg-[#4338CA]'
-                    : 'border-gray-200 bg-white text-[#374151]',
-                )}
-                onClick={() => setType(f.value)}
-              >
+              <Pill key={f.label} active={type === f.value} onClick={() => setType(f.value)}>
                 {f.label}
-              </Button>
+              </Pill>
             ))}
           </div>
         </div>
 
-        <div className="space-y-2">
-          <p className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">Work mode</p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#94a3b8]">
+            <SlidersHorizontal className="size-3.5" aria-hidden />
+            Mode
+          </span>
           <div className="flex flex-wrap gap-2">
             {MODE_FILTERS.map((f) => (
-              <Button
-                key={f.label}
-                type="button"
-                variant={mode === f.value ? 'default' : 'outline'}
-                size="sm"
-                className={cn(
-                  'min-h-9 rounded-full px-4 text-xs font-medium',
-                  mode === f.value
-                    ? 'bg-[#4F46E5] hover:bg-[#4338CA]'
-                    : 'border-gray-200 bg-white text-[#374151]',
-                )}
-                onClick={() => setMode(f.value)}
-              >
+              <Pill key={f.label} active={mode === f.value} onClick={() => setMode(f.value)}>
                 {f.label}
-              </Button>
+              </Pill>
             ))}
           </div>
         </div>
       </div>
 
+      {!loading && (
+        <p className="-mb-3 text-sm text-[#64748b]">
+          <span className="font-semibold text-[#0f172a]">{jobs.length}</span>{' '}
+          {jobs.length === 1 ? 'role' : 'roles'} found
+        </p>
+      )}
+
       <div className="grid gap-4 md:grid-cols-2">
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-52 rounded-xl bg-gray-100" />
+              <Skeleton key={i} className="h-52 rounded-2xl bg-slate-100/90" />
             ))
           : jobs.map((job) => (
               <JobCard
@@ -142,9 +157,12 @@ export default function CandidateJobsPage() {
       </div>
 
       {!loading && jobs.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-[#FAFAFA] py-16 text-center">
-          <p className="text-lg font-medium text-[#0A0A0A]">No jobs match your search</p>
-          <p className="mt-2 max-w-sm text-sm text-[#6B7280]">
+        <div className="glass-panel flex flex-col items-center justify-center rounded-3xl py-16 text-center">
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-[#EEF2FF] text-[#4338CA]">
+            <Search className="size-7" aria-hidden />
+          </div>
+          <p className="mt-5 text-lg font-semibold text-[#0f172a]">No jobs match your search</p>
+          <p className="mt-2 max-w-sm text-sm text-[#64748b]">
             Try different keywords or clear filters to see more roles.
           </p>
         </div>

@@ -3,9 +3,11 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { MapPin } from 'lucide-react'
 import { SkillsInput } from '@/components/candidate/SkillsInput'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Combobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -18,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import type { JobRow } from '@/lib/company-types'
+import { CITIES } from '@/lib/onboarding-options'
 import { supabase } from '@/lib/supabase'
 
 type JobFormProps = {
@@ -154,12 +157,14 @@ export function JobForm({ companyProfileId, mode, initial }: JobFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="location">Location</Label>
-            <Input
+            <Combobox
               id="location"
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="rounded-lg border-gray-200"
-              placeholder="Jaipur, Rajasthan"
+              onChange={setLocation}
+              options={CITIES}
+              placeholder="e.g. Bengaluru or Remote"
+              icon={<MapPin className="size-4" />}
+              inputClassName="rounded-lg border-gray-200"
             />
             {errors.location && <p className="text-sm text-red-600">{errors.location}</p>}
           </div>
